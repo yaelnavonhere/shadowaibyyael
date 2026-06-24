@@ -1,0 +1,832 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cynet · Shadow AI — Interactive Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ DS3 Foundations tokens (dark theme) ============ */
+:root{
+  --bg-default:#0c1322; --bg-sidemenu:#0a101d; --bg-header:#0c1322;
+  --surface:#141d30; --surface-2:#1a2440; --bg-dropdown:#1a2440;
+  --bg-blanket:rgba(6,10,18,.7);
+  --table-hover:#161f36; --menu-hover:#131c2f; --menu-selected:#2f80ff;
+  --btn-primary:#2f80ff; --btn-primary-hover:#1f6fee;
+  --btn-outline:rgba(255,255,255,.16);
+  --text-primary:#e8eef9; --text-secondary:#9aabc2; --text-tertiary:#6b7a93;
+  --text-link:#5aa0ff; --text-link-hover:#7db4ff;
+  --critical:#f15b5b; --critical-bg:#3a1d22;
+  --high:#f3a64a; --high-bg:#382816;
+  --medium:#f0c64a; --medium-bg:#332d15;
+  --low:#46c08d; --low-bg:#14302a;
+  --info:#5aa0ff; --info-bg:#142540;
+  --purple:#9b8cff; --purple-bg:#241f44; --teal:#33b6c4; --teal-bg:#15323a; --olive:#cdb14a; --olive-bg:#322c14;
+  --hairline:rgba(255,255,255,.07);
+  --help:#e6398a;
+  --guide:#ff3d92; --guide-2:#ff7ab8; --guide-bg:#3a1830; --guide-line:rgba(255,61,146,.5);
+  --guide-d:#e22a7e; --guide-lt:#ffd2e6; --guide-soft:rgba(255,255,255,.15);
+  --radius:12px; --radius-sm:8px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg-default);color:var(--text-primary);
+  font-size:14px;line-height:20px;-webkit-font-smoothing:antialiased}
+.h5{font-size:28px;line-height:36px;font-weight:400}
+.h6{font-size:20px;line-height:28px;font-weight:600}
+.sub1{font-size:16px;line-height:24px;font-weight:600}
+.sub2{font-size:14px;line-height:18px;font-weight:600}
+.cap2{font-size:12px;line-height:16px;color:var(--text-secondary)}
+.t-sec{color:var(--text-secondary)}.t-ter{color:var(--text-tertiary)}
+a,.linkish{color:var(--text-link);text-decoration:none;cursor:pointer}
+a:hover,.linkish:hover{color:var(--text-link-hover)}
+
+/* shell */
+.app{display:flex;min-height:100vh}
+.side{width:230px;flex:0 0 230px;background:var(--bg-sidemenu);border-right:1px solid var(--hairline);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.side.collapsed{width:62px;flex-basis:62px}
+.logo{display:flex;align-items:center;gap:10px;padding:18px 18px 14px;font-weight:700;font-size:18px;color:#fff}
+.nav{flex:1;overflow-y:auto;padding:6px 10px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;color:var(--text-secondary);
+  cursor:pointer;margin-bottom:2px;white-space:nowrap;font-size:14px}
+.nav-item:hover{background:var(--menu-hover);color:var(--text-primary)}
+.nav-item.active{background:var(--menu-selected);color:#fff;font-weight:600}
+.nav-item.active svg{stroke:#fff}
+.nav-item svg{flex:0 0 18px;width:18px;height:18px;stroke:var(--text-tertiary);fill:none;stroke-width:1.7}
+.nav-item .chev{margin-left:auto;opacity:.5}
+.side.collapsed .nav-item span,.side.collapsed .logo span,.side.collapsed .nav-item .chev{display:none}
+.collapse{padding:12px 18px;border-top:1px solid var(--hairline);color:var(--text-tertiary);cursor:pointer;font-size:18px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{height:62px;display:flex;align-items:center;gap:12px;padding:0 22px;background:var(--bg-header);
+  border-bottom:1px solid var(--hairline);position:sticky;top:0;z-index:30}
+.crumbs{display:flex;align-items:center;gap:8px;color:var(--text-tertiary);font-size:13px}
+.crumbs b{color:var(--text-primary);font-weight:600;font-size:20px;line-height:28px}
+.crumb-link{color:var(--text-link);cursor:pointer;font-size:13px}.crumbs .sep{opacity:.45}
+.topbar .spacer{flex:1}
+.tb-icon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--text-secondary);cursor:pointer}
+.tb-icon:hover{background:var(--menu-hover);color:var(--text-primary)}
+.tb-icon.help{background:var(--help);color:#fff}
+.tb-icon.ai{background:linear-gradient(135deg,#7c5cff,#33b6c4);color:#fff}
+.sitepick{display:flex;align-items:center;gap:9px;background:var(--surface-2);border:1px solid var(--hairline);
+  border-radius:9px;padding:7px 12px;cursor:pointer;font-size:14px}
+.sitepick .sq{width:18px;height:18px;border-radius:5px;background:var(--btn-primary);display:grid;place-items:center;color:#fff}
+.sitepick.mssp .sq{background:var(--btn-primary)} .crown{color:#ffd34d}
+
+/* scenario / walkthrough toolbar */
+.scnbar{display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(33,18,28,.96);backdrop-filter:blur(8px);
+  border:1px solid var(--guide-line);border-radius:13px;box-shadow:0 12px 34px rgba(0,0,0,.4);
+  position:fixed;top:72px;left:246px;right:16px;z-index:45;overflow-x:auto}
+.scnbar.hidden{display:none}
+.bar-collapse{margin-left:6px;flex:0 0 auto;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--guide-2);cursor:pointer;border:1px solid var(--guide-line)}
+.bar-collapse:hover{color:#fff;background:rgba(255,61,146,.2)}
+.scnfab{position:fixed;top:74px;right:18px;width:46px;height:46px;border-radius:50%;background:var(--guide);color:#fff;
+  display:none;place-items:center;cursor:pointer;z-index:45;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.scnfab.show{display:grid}
+.scnfab:hover{filter:brightness(1.08)}
+.msec{margin-top:15px}.msec .mlab{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--guide-2);font-weight:600;margin-bottom:6px}
+.msec .mtx{font-size:13px;color:var(--text-secondary);line-height:19px}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.fstep{background:var(--surface-2);border:1px solid var(--hairline);border-radius:8px;padding:7px 11px;font-size:12px;color:var(--text-primary)}
+.fstep .fn{color:var(--guide);font-weight:700;margin-right:6px}
+.farr{color:var(--guide-2)}
+.btn.guide{background:var(--guide);color:#fff;border:none}
+.btn.guide:hover{filter:brightness(1.07)}
+#scnBlanket .modal{border-top:3px solid var(--guide)}
+.scnbar .lbl{display:flex;align-items:center;gap:8px;color:var(--guide-2);font-size:13px;white-space:nowrap;font-weight:600}
+.scnbar .lbl svg{stroke:var(--guide)}
+.scn-btn{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--hairline);
+  border-radius:9px;padding:6px 11px;cursor:pointer;white-space:nowrap;color:var(--text-primary)}
+.scn-btn:hover{border-color:var(--guide-line)}
+.scn-btn .num{width:20px;height:20px;border-radius:6px;background:var(--guide-bg);color:var(--guide-2);display:grid;place-items:center;font-size:11px;font-weight:700}
+.scn-btn .nm{font-size:13px;font-weight:600;line-height:14px}
+.scn-btn .pp{font-size:11px;color:var(--text-tertiary);line-height:13px}
+.scn-btn.active{border-color:var(--guide);background:var(--guide-bg)}
+
+.content{padding:20px 22px;max-width:1720px;width:100%}
+
+/* insights header */
+.ins-head{display:flex;align-items:center;gap:10px;margin:2px 0 12px}
+.ins-head .fire{color:var(--high)}
+.ins-head .title{font-size:16px;font-weight:600}
+.ins-head .spacer{flex:1}
+.ins-toggle{color:var(--text-secondary);font-size:13px;cursor:pointer;display:flex;gap:6px;align-items:center}
+
+/* compact KPI cards */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius);padding:13px 15px;min-height:92px}
+.kpi .top{display:flex;align-items:center;gap:9px}
+.kpi .chip{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;flex:0 0 30px}
+.kpi .lab{font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-secondary);font-weight:600;line-height:14px}
+.kpi .val{font-size:26px;line-height:30px;font-weight:700;margin-top:8px}
+.kpi .val small{font-size:13px;font-weight:500;color:var(--text-secondary)}
+.kpi .sub{color:var(--text-tertiary);font-size:11px;margin-top:3px}
+.kpi.chartcard{padding:11px 14px}
+.kpi.chartcard .lab{margin-bottom:4px}
+
+/* insights chips row */
+.insights{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.insight{background:var(--surface);border:1px solid var(--hairline);border-left:3px solid var(--info);
+  border-radius:var(--radius-sm);padding:10px 13px;font-size:13px;display:flex;gap:9px;align-items:flex-start}
+.insight.warn{border-left-color:var(--high)}.insight.crit{border-left-color:var(--critical)}
+.insight svg{stroke:var(--text-secondary);flex:0 0 16px;margin-top:1px}
+
+.panel{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.panel-h{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--hairline)}
+.panel-h .title{font-size:15px;font-weight:600}.panel-h .spacer{flex:1}
+.cols2{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+
+/* toolbar */
+.toolbar{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--hairline)}
+.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--hairline);background:var(--bg-default);
+  display:grid;place-items:center;color:var(--text-secondary);cursor:pointer}
+.icon-btn:hover{color:var(--text-primary);border-color:#ffffff22}
+.search{display:flex;align-items:center;gap:8px;background:var(--bg-default);border:1px solid var(--hairline);border-radius:9px;
+  padding:8px 12px;min-width:240px;color:var(--text-tertiary);flex:1;max-width:420px}
+.search input{background:none;border:none;outline:none;color:var(--text-primary);font:inherit;width:100%}
+.datepick{display:flex;align-items:center;gap:8px;background:var(--bg-default);border:1px solid var(--hairline);border-radius:9px;padding:8px 12px;color:var(--text-secondary);cursor:pointer}
+.toolbar .spacer{flex:1}
+.chip-f{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--hairline);border-radius:16px;padding:4px 8px 4px 10px;font-size:12px}
+.chip-f .x{cursor:pointer;color:var(--text-tertiary)}
+
+.btn{display:inline-flex;align-items:center;gap:7px;border-radius:9px;padding:8px 14px;font:inherit;font-weight:500;cursor:pointer;border:1px solid transparent}
+.btn.primary{background:var(--btn-primary);color:#fff}.btn.primary:hover{background:var(--btn-primary-hover)}
+.btn.outline{background:transparent;border-color:var(--btn-outline);color:var(--text-primary)}.btn.outline:hover{border-color:#ffffff40}
+.btn.ghost{background:transparent;color:var(--text-link)}
+.btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px;padding:11px 16px;border-bottom:1px solid var(--hairline)}
+thead th .sf{display:inline-flex;gap:4px;margin-left:5px;opacity:.5;vertical-align:middle}
+tbody td{padding:12px 16px;border-bottom:1px solid var(--hairline);font-size:14px;vertical-align:middle}
+tbody tr{cursor:pointer}tbody tr:hover{background:var(--table-hover)}
+tbody tr:last-child td{border-bottom:none}
+.row-actions{text-align:right;white-space:nowrap;color:var(--text-tertiary)}
+.row-actions .btn{margin-right:6px;vertical-align:middle}
+.row-actions .linkish{margin-right:4px}
+.svc{display:flex;align-items:center;gap:10px}
+.ava{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:700}
+.ava-round{border-radius:50%;background:var(--surface-2);color:var(--text-secondary)}
+
+/* badges / tags / counters */
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.badge.crit{color:var(--critical);background:var(--critical-bg)}.badge.high{color:var(--high);background:var(--high-bg)}
+.badge.med{color:var(--medium);background:var(--medium-bg)}.badge.low{color:var(--low);background:var(--low-bg)}
+.badge.info{color:var(--info);background:var(--info-bg)}.badge.neutral{color:var(--text-secondary);background:#1d2740}
+.dotsev{display:inline-block;width:7px;height:7px;border-radius:50%}
+.ctag{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600}
+.ctag svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8}
+.tag{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--hairline);border-radius:6px;padding:2px 8px;font-size:12px;color:var(--text-secondary)}
+.tag svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8}
+.counter{background:#1d2740;color:var(--text-secondary);border-radius:11px;font-size:12px;padding:1px 8px;font-weight:600}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}.dot.on{background:var(--low)}.dot.off{background:var(--text-tertiary)}
+.pill-poc{background:var(--purple-bg);color:var(--purple);border-radius:6px;padding:1px 7px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.riskscore{font-weight:700;font-size:15px}
+
+/* top users widget */
+.uitem{display:flex;align-items:center;gap:11px;padding:10px 16px;border-bottom:1px solid var(--hairline);cursor:pointer}
+.uitem:hover{background:var(--table-hover)}.uitem:last-child{border-bottom:none}
+.uitem .meta{flex:1;min-width:0}.uitem .nm{font-size:13px;color:var(--text-link);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uitem .sb{font-size:11px;color:var(--text-tertiary)}.uitem .ses{font-weight:700;font-size:15px;text-align:right}
+
+/* expandable users */
+.subrow td{background:#0f1828}
+.app-line{display:flex;align-items:center;gap:10px;padding:6px 0;color:var(--text-secondary);font-size:13px}
+.appicon{width:20px;height:20px;border-radius:5px;display:inline-grid;place-items:center;font-size:10px;font-weight:700}
+.expander{transition:transform .15s;display:inline-block;color:var(--text-tertiary)}.expander.open{transform:rotate(90deg)}
+
+/* domain access */
+.dacard{padding:8px 16px}
+.dom{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--hairline)}
+.dom:last-child{border-bottom:none}.dom .l{display:flex;align-items:center;gap:11px}
+.dom .ic{width:30px;height:30px;border-radius:8px;background:var(--surface-2);display:grid;place-items:center;color:var(--text-secondary)}
+
+/* forensics */
+.fxbar{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.timeline{background:#0a0f1c;border:1px solid var(--hairline);border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;overflow-x:auto}
+.tl-track{display:flex;align-items:flex-start;min-width:920px;position:relative;padding-top:6px}
+.tl-node{display:flex;flex-direction:column;align-items:center;gap:7px;position:relative;flex:1}
+.tl-node .nd{width:38px;height:38px;border-radius:10px;background:var(--surface);border:1px solid var(--hairline);display:grid;place-items:center;color:var(--text-secondary);z-index:2}
+.tl-node.alert .nd{background:var(--critical-bg);border-color:#f15b5b66;color:var(--critical);box-shadow:0 0 0 4px #f15b5b22}
+.tl-node .lab{font-size:11px;color:var(--text-secondary);text-align:center;max-width:84px}
+.tl-node .tm{font-size:10px;color:var(--text-tertiary)}
+.tl-line{position:absolute;top:25px;left:50%;width:100%;height:2px;background:var(--hairline);z-index:1}
+.tl-node:last-child .tl-line{display:none}
+.graphwrap{display:grid;grid-template-columns:1fr 330px;gap:14px;margin-bottom:14px}
+.graph{background:radial-gradient(circle at 60% 50%,#101a2e,#0a0f1c);border:1px solid var(--hairline);border-radius:var(--radius);min-height:320px;display:grid;place-items:center;padding:10px}
+.risk{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius);padding:4px 0}
+.risk .ri{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--hairline)}
+.risk .ri:last-child{border-bottom:none}
+.risk .ri .ico{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:0 0 32px}
+.risk .ri .sc{margin-left:auto;font-weight:700;border-radius:14px;padding:2px 9px;font-size:12px}
+.tabbar{display:flex;gap:2px;border-bottom:1px solid var(--hairline);overflow-x:auto}
+.tabx{padding:12px 16px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;font-size:14px;border-bottom:2px solid transparent}
+.tabx:hover{color:var(--text-primary)}.tabx.active{color:var(--text-primary);border-bottom-color:var(--btn-primary);font-weight:600}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding:18px}
+.detail-col h4{margin:0 0 10px;color:var(--text-link);font-size:12px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;border-bottom:1px solid var(--hairline);padding-bottom:8px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:13px}
+.kv .k{color:var(--text-secondary)}.kv .v{text-align:right}
+
+/* modal */
+.blanket{position:fixed;inset:0;background:var(--bg-blanket);display:none;align-items:center;justify-content:center;z-index:120}
+.blanket.show{display:flex}
+.modal{background:var(--bg-dropdown);border:1px solid var(--hairline);border-radius:14px;width:520px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal-h{display:flex;align-items:center;padding:18px 20px;border-bottom:1px solid var(--hairline)}
+.modal-h .tt{font-size:18px;font-weight:600}.modal-h .x{margin-left:auto;cursor:pointer;color:var(--text-secondary)}
+.modal-b{padding:20px}.modal-f{display:flex;justify-content:flex-end;gap:10px;padding:16px 20px;border-top:1px solid var(--hairline)}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border:1px solid var(--hairline);border-radius:9px;margin-bottom:10px;cursor:pointer}
+.opt:hover{border-color:#ffffff33}.opt input{accent-color:var(--btn-primary);margin-top:3px}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--hairline);border-radius:10px;padding:12px 18px;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:200;display:none}
+.toast.show{display:block}
+
+/* ====== walkthrough (coachmarks) ====== */
+#tour{position:fixed;inset:0;z-index:100;display:none}
+#tour.show{display:block}
+.tour-block{position:absolute;inset:0;cursor:default}
+.tour-spot{position:fixed;border:2px solid var(--guide);border-radius:10px;box-shadow:0 0 0 9999px rgba(7,11,20,.74),0 0 0 4px rgba(255,61,146,.25);
+  transition:all .25s ease;pointer-events:none;display:none}
+.tour-bubble{position:fixed;width:340px;max-width:90vw;background:var(--bg-dropdown);border:1px solid var(--guide-line);border-top:3px solid var(--guide);border-radius:12px;
+  box-shadow:0 16px 50px rgba(0,0,0,.55);padding:16px;z-index:102}
+.tour-bubble .pchip{display:inline-flex;align-items:center;gap:6px;background:var(--guide-bg);color:var(--guide-2);border-radius:14px;padding:2px 9px;font-size:11px;font-weight:700;margin-bottom:8px}
+.tour-bubble .tt{font-size:15px;font-weight:600;margin-bottom:5px}
+.tour-bubble .tx{font-size:13px;color:var(--text-secondary);line-height:19px}
+.tour-bubble .ft{display:flex;align-items:center;gap:8px;margin-top:14px}
+.tour-bubble .step{font-size:12px;color:var(--text-tertiary);margin-right:auto}
+.tour-bubble .mini{background:transparent;border:1px solid var(--btn-outline);color:var(--text-primary);border-radius:8px;padding:6px 12px;cursor:pointer;font:inherit}
+.tour-bubble .mini.primary{background:var(--guide);border-color:transparent;color:#fff}
+.tour-bubble .skip{position:absolute;top:12px;right:14px;color:var(--text-tertiary);cursor:pointer;font-size:12px}
+
+/* ===== Guide layer: solid pink surfaces ===== */
+.scnbar{background:var(--guide);border:1px solid var(--guide-d);box-shadow:0 10px 28px rgba(0,0,0,.4)}
+.scnbar .lbl{color:#fff}.scnbar .lbl svg{stroke:#fff}
+.scn-btn{background:var(--guide-soft);border:1px solid rgba(255,255,255,.28);color:#fff}
+.scn-btn:hover{background:rgba(255,255,255,.26);border-color:rgba(255,255,255,.5)}
+.scn-btn .num{background:rgba(255,255,255,.28);color:#fff}
+.scn-btn .nm{color:#fff}.scn-btn .pp{color:var(--guide-lt)}
+.scn-btn.active{background:#fff;border-color:#fff}
+.scn-btn.active .nm{color:var(--guide)}.scn-btn.active .pp{color:var(--guide-d)}.scn-btn.active .num{background:var(--guide);color:#fff}
+.bar-collapse{color:#fff;border-color:rgba(255,255,255,.32)}.bar-collapse:hover{background:rgba(255,255,255,.22);color:#fff}
+
+#scnBlanket .modal{background:var(--guide);border:none;border-top:none}
+#scnBlanket .modal-h{border-bottom-color:rgba(255,255,255,.22)}
+#scnBlanket .modal-h .tt{color:#fff}#scnBlanket .modal-h .x{color:#fff}
+#scnBlanket .modal-b .t-sec{color:var(--guide-lt)}
+#scnBlanket .msec .mlab{color:var(--guide-lt)}#scnBlanket .msec .mtx{color:#fff}
+#scnBlanket .pchip{background:rgba(255,255,255,.2)!important;color:#fff!important}
+#scnBlanket .fstep{background:var(--guide-soft);border-color:rgba(255,255,255,.28);color:#fff}
+#scnBlanket .fstep .fn{color:#fff}#scnBlanket .farr{color:var(--guide-lt)}
+#scnBlanket .modal-f{border-top-color:rgba(255,255,255,.22)}
+#scnBlanket .btn.guide{background:#fff;color:var(--guide)}
+#scnBlanket .btn.outline{border-color:rgba(255,255,255,.55);color:#fff;background:transparent}
+
+.tour-bubble{background:var(--guide);border:1px solid var(--guide-d);border-top:1px solid var(--guide-d)}
+.tour-bubble .pchip{background:rgba(255,255,255,.2);color:#fff}
+.tour-bubble .tt{color:#fff}.tour-bubble .tx{color:var(--guide-lt)}
+.tour-bubble .step{color:var(--guide-lt)}.tour-bubble .skip{color:var(--guide-lt)}
+.tour-bubble .mini{border-color:rgba(255,255,255,.5);color:#fff;background:transparent}
+.tour-bubble .mini.primary{background:#fff;color:var(--guide);border-color:#fff}
+.tour-spot{border-color:var(--guide);box-shadow:0 0 0 9999px rgba(7,11,20,.74)}
+
+@media (max-width:1250px){.kpi-row{grid-template-columns:1fr 1fr}.insights{grid-template-columns:1fr 1fr}.cols2,.graphwrap{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side">
+    <div class="logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#2f80ff" stroke-width="2"/><circle cx="12" cy="12" r="3.4" fill="#2f80ff"/></svg><span>cynet</span></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="collapse" id="collapseBtn">&laquo;</div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="crumbs" id="crumbs"></div>
+      <div class="spacer"></div>
+      <div class="sitepick" id="sitePick"></div>
+      <div class="tb-icon" title="Download Agent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg></div>
+      <div class="tb-icon" title="User"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+      <div class="tb-icon ai" title="AI Assistant"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l1.7 4.1L18 9l-4.3 1.9L12 15l-1.7-4.1L6 9l4.3-1.9z"/></svg></div>
+      <div class="tb-icon help" title="Help"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.1 9a3 3 0 115.8 1c0 2-3 2-3 4"/><circle cx="12" cy="17.5" r=".6" fill="currentColor"/></svg></div>
+    </header>
+    <div class="scnbar" id="scnbar"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- export modal -->
+<div class="blanket" id="blanket">
+  <div class="modal">
+    <div class="modal-h"><div class="tt">Export Shadow AI report</div><div class="x" onclick="closeModal()">✕</div></div>
+    <div class="modal-b" id="t-repopts">
+      <p class="t-sec" style="margin-top:0">A non-technical summary of AI usage for a board update, a client report, or an audit.</p>
+      <label class="opt"><input type="radio" name="rep" checked><div><div class="sub2">Executive summary (PDF)</div><div class="cap2">Services, users, endpoint AI apps and key insights — no raw data.</div></div></label>
+      <label class="opt"><input type="radio" name="rep"><div><div class="sub2">Full inventory (CSV)</div><div class="cap2">All detected services, endpoint AI apps and users.</div></div></label>
+      <label class="opt"><input type="radio" name="rep"><div><div class="sub2">Client-facing report (PDF, co-branded)</div><div class="cap2">MSP value story for GreenLeaf Dental.</div></div></label>
+    </div>
+    <div class="modal-f"><button class="btn outline" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="closeModal();toast('Report generated and downloaded')">Generate report</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- floating scenarios FAB -->
+<div class="scnfab" id="scnfab" onclick="expandBar()" title="Guided scenarios"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M13 3L4 14h6l-1 7 9-11h-6z"/></svg></div>
+
+<!-- scenario intro modal -->
+<div class="blanket" id="scnBlanket">
+  <div class="modal" style="width:600px">
+    <div class="modal-h"><div class="tt" id="scnModalTitle"></div><div class="x" onclick="closeScn()">✕</div></div>
+    <div class="modal-b" id="scnModalBody"></div>
+    <div class="modal-f"><button class="btn outline" onclick="closeScn()">Cancel</button><button class="btn guide" onclick="startScenario()">Start walkthrough ›</button></div>
+  </div>
+</div>
+
+<!-- walkthrough layer -->
+<div id="tour"><div class="tour-block" id="tourBlock"></div><div class="tour-spot" id="tourSpot"></div><div class="tour-bubble" id="tourBubble"></div></div>
+
+<script>
+/* ===================== icons ===================== */
+const ic=(p,sw,sz)=>`<svg width="${sz||16}" height="${sz||16}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw||1.8}">${p}</svg>`;
+const ICN={
+  dash:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  alert:'<path d="M12 4l8 14H4z"/><path d="M12 10v3"/><circle cx="12" cy="16" r=".5" fill="currentColor"/>',
+  eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  siem:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
+  act:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/>',
+  idn:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="12" r="2.4"/><path d="M13 10h5M13 14h5"/>',
+  ep:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/>',
+  cloud:'<path d="M6 16a4 4 0 010-8 5 5 0 019.6-1.5A4 4 0 0118 16z"/>',
+  shadow:'<path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9z"/><path d="M6 19h12"/>',
+  rep:'<path d="M5 4h14v16H5z"/><path d="M9 9v7M13 7v9M17 11v5"/>',
+  set:'<circle cx="12" cy="12" r="3"/><path d="M19.4 13a8 8 0 000-2l2-1.5-2-3.4-2.3 1a8 8 0 00-1.7-1L15 3h-4l-.4 2.6a8 8 0 00-1.7 1l-2.3-1-2 3.4L4.6 11a8 8 0 000 2l-2 1.5 2 3.4 2.3-1a8 8 0 001.7 1L11 21h4l.4-2.6a8 8 0 001.7-1l2.3 1 2-3.4z"/>',
+  users:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5"/><path d="M16 5.2a3 3 0 010 5.6M21 20c0-2.6-1.6-4.3-4-4.8"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18"/>',
+  file:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>',
+  net:'<circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="M7.5 7.5l3 8M16.5 7.5l-3 8"/>',
+  trend:'<path d="M3 17l6-6 4 4 7-8"/><path d="M21 7h-4M21 7v4"/>',
+  export:'<path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/>',
+  filter:'<path d="M3 5h18M6 12h12M10 19h4"/>',
+  refresh:'<path d="M21 12a9 9 0 11-3-6.7M21 4v4h-4"/>',
+  cal:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/>',
+  flame:'<path d="M12 3c1 3 4 4 4 8a4 4 0 11-8 0c0-2 1-3 1-4 1 1 2 1 3 0z"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+  wifi:'<path d="M5 12a10 10 0 0114 0M8 15a6 6 0 018 0"/><circle cx="12" cy="18" r=".6" fill="currentColor"/>',
+  bolt:'<path d="M13 3L4 14h6l-1 7 9-11h-6z"/>',
+  link:'<path d="M9 15l6-6M10 7l1-1a4 4 0 016 6l-1 1M14 17l-1 1a4 4 0 01-6-6l1-1"/>',
+};
+const I=(name,sw)=>ic(ICN[name],sw);
+
+/* ===================== charts ===================== */
+function areaChart(vals,color,w,h){
+  w=w||190;h=h||44;const max=Math.max(...vals),min=Math.min(...vals);
+  const pts=vals.map((v,i)=>[i/(vals.length-1)*w,h-((v-min)/((max-min)||1))*(h-6)-3]);
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=line+` L${w} ${h} L0 ${h} Z`;
+  return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <defs><linearGradient id="g${color.replace('#','')}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".35"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#g${color.replace('#','')})"/><path d="${line}" fill="none" stroke="${color}" stroke-width="2"/></svg>`;
+}
+function miniBars(vals,color,w,h){
+  w=w||190;h=h||44;const max=Math.max(...vals);const bw=w/vals.length;
+  return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${
+    vals.map((v,i)=>{const bh=(v/max)*(h-4);return `<rect x="${(i*bw+bw*0.18).toFixed(1)}" y="${(h-bh).toFixed(1)}" width="${(bw*0.64).toFixed(1)}" height="${bh.toFixed(1)}" rx="2" fill="${color}"/>`}).join('')
+  }</svg>`;
+}
+function donut(segs,size){ // segs:[{v,color}]
+  size=size||110;const r=size/2-9,cx=size/2,cy=size/2,C=2*Math.PI*r;let off=0;const tot=segs.reduce((a,s)=>a+s.v,0);
+  const arcs=segs.map(s=>{const len=s.v/tot*C;const el=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.color}" stroke-width="9" stroke-dasharray="${len.toFixed(1)} ${(C-len).toFixed(1)}" stroke-dashoffset="${(-off).toFixed(1)}" transform="rotate(-90 ${cx} ${cy})"/>`;off+=len;return el}).join('');
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#1d2740" stroke-width="9"/>${arcs}<text x="${cx}" y="${cy+5}" text-anchor="middle" fill="#e8eef9" font-size="20" font-weight="700">${tot}</text></svg>`;
+}
+
+/* ===================== data ===================== */
+const svcA=(t,c)=>`<span class="ava" style="background:${c}22;color:${c}">${t}</span>`;
+const services=[
+  {id:"chatgpt",name:"ChatGPT",ic:svcA("GPT","#10a37f"),first:"02 Apr 2026",last:"24 Jun 2026",users:142,uns:false},
+  {id:"copilot",name:"Microsoft Copilot",ic:svcA("Co","#2f80ff"),first:"11 Feb 2026",last:"24 Jun 2026",users:133,uns:false},
+  {id:"gemini",name:"Google Gemini",ic:svcA("Ge","#e8703a"),first:"19 Mar 2026",last:"24 Jun 2026",users:88,uns:false},
+  {id:"claude",name:"Claude",ic:svcA("Cl","#d97757"),first:"05 Mar 2026",last:"23 Jun 2026",users:61,uns:false},
+  {id:"perplexity",name:"Perplexity",ic:svcA("Px","#20b8c4"),first:"28 Apr 2026",last:"22 Jun 2026",users:24,uns:false},
+  {id:"deepseek",name:"DeepSeek",ic:svcA("Ds","#7c5cff"),first:"14 Jun 2026",last:"24 Jun 2026",users:9,uns:true},
+];
+const serviceUsers={
+  chatgpt:[{u:"a.cohen@greenleaf.com",first:"02 Apr 2026",last:"24 Jun 2026",eps:"EPS-16-131",ep:"eps-16-131"},
+    {u:"m.levi@greenleaf.com",first:"15 Apr 2026",last:"24 Jun 2026",eps:"EPS-08-044",ep:"eps-08-044"},
+    {u:"r.azoulay@greenleaf.com",first:"21 Apr 2026",last:"20 Jun 2026",eps:"EPS-22-090",ep:"eps-22-090"},
+    {u:"t.banai@greenleaf.com",first:"03 May 2026",last:"24 Jun 2026",eps:"EPS-16-131",ep:"eps-16-131"}],
+  deepseek:[{u:"r.azoulay@greenleaf.com",first:"14 Jun 2026",last:"24 Jun 2026",eps:"EPS-22-090",ep:"eps-22-090"},
+    {u:"unknown (unmanaged session)",first:"16 Jun 2026",last:"23 Jun 2026",eps:"EPS-16-131",ep:"eps-16-131"}],
+};
+const topUsers=[
+  {u:"r.azoulay@greenleaf.com",ses:412,svcs:"5 services",last:"2h ago",risk:"high"},
+  {u:"a.cohen@greenleaf.com",ses:308,svcs:"4 services",last:"35m ago",risk:"med"},
+  {u:"t.banai@greenleaf.com",ses:271,svcs:"4 services",last:"1h ago",risk:"med"},
+  {u:"m.levi@greenleaf.com",ses:190,svcs:"3 services",last:"4h ago",risk:"low"},
+  {u:"d.peretz@greenleaf.com",ses:142,svcs:"3 services",last:"yesterday",risk:"low"},
+];
+const endpointApps=[
+  {id:"openclaw",name:"OpenClaw Agent",kind:"Autonomous AI agent",eps:3,status:"Active",risk:"crit",domains:8},
+  {id:"ollama",name:"Ollama",kind:"Local model runtime",eps:12,status:"Active",risk:"high",domains:3},
+  {id:"cursor",name:"Cursor",kind:"AI code editor",eps:19,status:"Active",risk:"med",domains:5},
+  {id:"lmstudio",name:"LM Studio",kind:"Local model runtime",eps:7,status:"Inactive",risk:"low",domains:1},
+];
+const appEndpoints={
+  openclaw:[{ep:"EPS-16-131",epid:"eps-16-131",user:"r.azoulay@greenleaf.com",first:"16 Jun 2026",last:"24 Jun 2026",status:"Active"},
+    {ep:"EPS-22-090",epid:"eps-22-090",user:"t.banai@greenleaf.com",first:"18 Jun 2026",last:"24 Jun 2026",status:"Active"},
+    {ep:"EPS-31-002",epid:"eps-31-002",user:"a.cohen@greenleaf.com",first:"21 Jun 2026",last:"23 Jun 2026",status:"Active"}],
+  ollama:[{ep:"EPS-08-044",epid:"eps-08-044",user:"m.levi@greenleaf.com",first:"02 May 2026",last:"24 Jun 2026",status:"Active"},
+    {ep:"EPS-16-131",epid:"eps-16-131",user:"r.azoulay@greenleaf.com",first:"09 May 2026",last:"24 Jun 2026",status:"Active"}],
+};
+const domainAccess={
+  openclaw:[{n:"drive.google.com",t:"Cloud storage",sev:"crit"},{n:"github.com",t:"Source code",sev:"high"},
+    {n:"mail.google.com",t:"Email",sev:"high"},{n:"api.openai.com",t:"External LLM API",sev:"med"},
+    {n:"internal-crm.greenleaf.local",t:"Internal service",sev:"crit"},{n:"slack.com",t:"Messaging",sev:"med"},
+    {n:"s3.amazonaws.com",t:"Cloud storage",sev:"high"},{n:"localhost:11434",t:"Local model",sev:"low"}],
+  ollama:[{n:"localhost:11434",t:"Local model",sev:"low"},{n:"ollama.com",t:"Model registry",sev:"med"},{n:"huggingface.co",t:"Model registry",sev:"med"}],
+};
+const appColors={M365:["#2f80ff","Microsoft 365"],TM:["#6264d6","Teams"],SP:["#0f8a8a","SharePoint"],WX:["#11a37f","Webex"],SL:["#e0245e","Slack"]};
+const cloudUsers=[
+  {u:"a@cynetint.onmicrosoft.com",ext:true,apps:["M365","TM","SP"],mfa:0,admin:0,last:"no Logins"},
+  {u:"AdamTest@cynetint.onmicrosoft.com",ext:true,apps:["M365","TM","SP"],mfa:0,admin:3,last:"no Logins"},
+  {u:"admin@cynetint.onmicrosoft.com",ext:true,apps:["M365","TM","SP"],mfa:0,admin:3,last:"no Logins"},
+  {u:"admin@shaik-9xfk.wbx.ai",ext:false,apps:["WX"],mfa:0,admin:1,last:"no Logins"},
+  {u:"r.azoulay@greenleaf.com",ext:false,apps:["M365","SL"],mfa:1,admin:0,last:"2h ago"},
+  {u:"AndreyA@cynetint.onmicrosoft.com",ext:true,apps:["M365","TM","SP"],mfa:0,admin:3,last:"no Logins"},
+  {u:"anthonyk@cynetint.onmicrosoft.com",ext:true,apps:["M365","TM","SP"],mfa:0,admin:3,last:"no Logins"},
+];
+const customers=[
+  {name:"GreenLeaf Dental",poc:true,eps:240,oc:[{s:"crit",n:1},{s:"high",n:2}],ai:"crit",svc:6,apps:4},
+  {name:"Northwind Insurance",poc:false,eps:512,oc:[{s:"high",n:1}],ai:"high",svc:11,apps:6},
+  {name:"Harbor Legal LLP",poc:false,eps:128,oc:[{s:"high",n:1}],ai:"med",svc:7,apps:2},
+  {name:"BrightPath Clinic",poc:false,eps:96,oc:[{s:"low",n:2}],ai:"low",svc:4,apps:1},
+];
+
+/* ===================== nav ===================== */
+const navItems=[
+  {k:"Overview",i:"dash"},{k:"Alerts",i:"alert"},{k:"Forensic",i:"eye",t:"host"},{k:"SIEM",i:"siem"},
+  {k:"Actions",i:"act"},{k:"Endpoints",i:"ep",chev:true},{k:"SaaS & Cloud",i:"cloud",chev:true,t:"users"},
+  {k:"Shadow AI",i:"shadow",t:"shadow"},{k:"Identity",i:"idn"},{k:"Reports",i:"rep",chev:true},{k:"Settings",i:"set",chev:true},
+];
+function chip(c){return `<span class="kpi-chiptmp"></span>`}
+function renderNav(active){
+  document.getElementById('nav').innerHTML=navItems.map(n=>`
+    <div class="nav-item ${n.k===active?'active':''}" ${n.t?`onclick="go('${n.t}')"`:''}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">${ICN[n.i]}</svg><span>${n.k}</span>${n.chev?'<span class="chev">›</span>':''}
+    </div>`).join('');
+}
+
+/* ===================== router ===================== */
+let stack=[];
+function go(s,p){stack.push({screen:s,param:p});render(s,p);window.scrollTo(0,0);}
+function back(){stack.pop();const c=stack[stack.length-1]||{screen:'mssp'};render(c.screen,c.param);}
+function crumbs(arr){document.getElementById('crumbs').innerHTML=arr.map((c,i)=>i===arr.length-1?`<b>${c.t}</b>`:`<span class="crumb-link" ${c.go?`onclick="${c.go}"`:''}>${c.t}</span><span class="sep">›</span>`).join(' ');}
+const sevMap={crit:['CRITICAL','crit'],high:['HIGH','high'],med:['MEDIUM','med'],low:['LOW','low'],info:['INFO','info']};
+const B=(s,txt)=>`<span class="badge ${sevMap[s][1]}">${txt||sevMap[s][0]}</span>`;
+const sevColor={crit:'var(--critical)',high:'var(--high)',med:'var(--medium)',low:'var(--low)',info:'var(--info)'};
+function setSite(name,mssp){
+  const sp=document.getElementById('sitePick');sp.classList.toggle('mssp',!!mssp);
+  sp.innerHTML=`<span class="sq">${mssp?'<span class="crown">♛</span>':''}</span><span>${name}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>`;
+}
+
+/* ===================== screens ===================== */
+function render(screen,param){({mssp,shadow:shadowMain,service:serviceDrill,endpointapp:endpointAppDrill,users:usersScreen,host:hostForensics}[screen]||shadowMain)(param);}
+
+/* ---- MSSP dashboard (UC5) ---- */
+function mssp(){
+  setSite('MSSP level',true);renderNav('Overview');crumbs([{t:'Dashboard'}]);
+  document.getElementById('content').innerHTML=`
+  <div class="ins-head"><span class="chip" style="width:26px;height:26px;background:var(--high-bg);color:var(--high);border-radius:7px;display:grid;place-items:center">${I('flame')}</span>
+    <span class="title">AI exposure across customers</span><div class="spacer"></div><span class="ins-toggle">Hide Insights <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span></div>
+  <div class="kpi-row" id="t-mssp-kpi">
+    ${kpi('cloud','#2f80ff','GenAI services','38','across 4 customers')}
+    ${kpi('shadow','#9b8cff','Endpoint AI apps','21','7 unsanctioned')}
+    ${kpi('users','#33b6c4','Unmanaged usage','35<small>%</small>','of GenAI sessions')}
+    ${kpiChart('Customers needing attention',`<span style="color:var(--critical)">2</span>`,'critical AI exposure',miniBars([1,2,1,3,2,4,3,4],'#9b8cff'))}
+  </div>
+  <div class="panel" id="t-mssp-customers">
+    <div class="toolbar"><div class="icon-btn">${I('filter')}</div>
+      <div class="search">${I('eye')}<input placeholder="Search customer…"></div>
+      <div class="spacer"></div><span class="cap2">Ranked by AI exposure</span></div>
+    <table><thead><tr><th>Site name</th><th>Endpoints</th><th>AI exposure</th><th>GenAI / endpoint AI</th><th>Open alerts</th><th></th></tr></thead><tbody>
+      ${customers.map((c,idx)=>`<tr ${idx===0?'id="t-mssp-row"':''} onclick="enterSite('${c.name}')">
+        <td><div style="display:flex;align-items:center;gap:8px">${c.poc?'<span class="pill-poc">POC</span>':''}<span class="linkish">${c.name}</span></div></td>
+        <td><span class="t-sec" style="display:inline-flex;align-items:center;gap:7px"><span style="width:14px;height:14px;display:inline-block;color:var(--text-tertiary)">${I('ep')}</span>${c.eps}</span></td>
+        <td>${B(c.ai)}</td>
+        <td><span class="tag">${c.svc} services</span> <span class="tag">${c.apps} apps</span></td>
+        <td>${c.oc.map(o=>`<span class="badge ${o.s}">${o.n} ${sevMap[o.s][0]}</span>`).join(' ')}</td>
+        <td class="row-actions"><button class="btn outline" style="padding:5px 10px" onclick="event.stopPropagation();enterSite('${c.name}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${ICN.link}</svg> Visit site</button>›</td>
+      </tr>`).join('')}
+    </tbody></table>
+    <div style="display:flex;align-items:center;padding:12px 16px;color:var(--text-tertiary);font-size:12px"><span class="linkish" style="display:inline-flex;gap:6px;align-items:center">${'<svg width=14 height=14 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=1.8>'+ICN.refresh+'</svg>'} Refresh</span><span style="margin-left:10px">Last synced: 24 Jun 2026 11:44 UTC</span><div style="flex:1"></div>1–4 of 12</div>
+  </div>`;
+}
+function enterSite(name){setSite(name,false);go('shadow');}
+
+/* compact kpi helpers */
+function kpi(icon,color,lab,val,sub){
+  return `<div class="kpi"><div class="top"><span class="chip" style="background:${color}1f;color:${color}">${I(icon)}</span><span class="lab">${lab}</span></div>
+    <div class="val">${val}</div><div class="sub">${sub}</div></div>`;
+}
+function kpiChart(lab,val,sub,chart){
+  return `<div class="kpi chartcard"><span class="lab">${lab}</span><div style="display:flex;align-items:flex-end;gap:10px"><div class="val" style="margin-top:2px">${val}</div><div style="flex:1">${chart}</div></div><div class="sub">${sub}</div></div>`;
+}
+
+/* ---- Shadow AI main ---- */
+function shadowMain(){
+  setSite('GreenLeaf Dental',false);renderNav('Shadow AI');crumbs([{t:'SaaS & Cloud',go:"go('users')"},{t:'Shadow AI'}]);
+  document.getElementById('content').innerHTML=`
+  <div class="ins-head"><span class="chip" style="width:26px;height:26px;background:var(--high-bg);color:var(--high);border-radius:7px;display:grid;place-items:center">${I('flame')}</span>
+    <span class="title">Shadow AI Insights</span><div class="spacer"></div><span class="ins-toggle">Hide Insights <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span></div>
+  <div class="kpi-row" id="t-kpis">
+    ${kpi('cloud','#2f80ff','Total GenAI services','6','1 unsanctioned')}
+    ${kpi('users','#33b6c4','Users using GenAI','187','of 240 endpoints')}
+    ${kpi('shadow','#9b8cff','Endpoint AI applications','4','2 with broad access')}
+    ${kpiChart('GenAI usage (30d)',`+60<small>%</small>`,'vs previous 30 days',areaChart([8,9,11,10,13,15,14,18,20,19,24,28],'#5aa0ff'))}
+  </div>
+  <div class="insights">
+    <div class="insight warn">${I('alert')}<div><b>35%</b> of GenAI usage is via unmanaged sessions</div></div>
+    <div class="insight crit">${I('alert')}<div><b>3 endpoints</b> run an unsanctioned autonomous AI agent</div></div>
+    <div class="insight">${I('trend')}<div>GenAI usage <b>+60%</b> in the last 30 days</div></div>
+    <div class="insight">${I('users')}<div>Top user accesses <b>5</b> GenAI services</div></div>
+  </div>
+  <div class="cols2">
+    <div class="panel" id="t-services">
+      <div class="panel-h"><span class="title">GenAI Services</span><span class="counter">6</span><div class="spacer"></div>
+        <button class="btn outline" id="t-export" style="padding:6px 12px" onclick="openModal()">${I('export')} Export</button></div>
+      <div class="toolbar" style="border-top:none"><div class="icon-btn">${I('filter')}</div>
+        <div class="search">${I('eye')}<input placeholder="Search service…"></div>
+        <span class="chip-f">Status: Unsanctioned <span class="x">✕</span></span></div>
+      <table><thead><tr><th>Service name</th><th>First seen</th><th>Last seen</th><th>Users</th><th></th></tr></thead><tbody>
+      ${services.map(s=>`<tr ${s.id==='deepseek'?'id="t-deepseek"':''} onclick="go('service','${s.id}')">
+        <td><div class="svc">${s.ic}<span>${s.name}</span>${s.uns?'<span class="ctag" style="color:var(--high);background:var(--high-bg)">Unsanctioned</span>':''}</div></td>
+        <td class="t-sec">${s.first}</td><td class="t-sec">${s.last}</td><td><span class="counter">${s.users}</span></td>
+        <td class="row-actions"><span class="linkish">View</span> ›</td></tr>`).join('')}
+      </tbody></table>
+    </div>
+    <div class="panel" id="t-topusers">
+      <div class="panel-h"><span class="title">Top GenAI Users</span><div class="spacer"></div><span class="cap2">by usage</span></div>
+      ${topUsers.map(u=>`<div class="uitem" onclick="go('users')">
+        <span class="ava ava-round">${u.u.slice(0,2).toUpperCase()}</span>
+        <div class="meta"><div class="nm">${u.u}</div><div class="sb">${u.svcs} · last ${u.last}</div></div>
+        <div><div class="ses">${u.ses}</div><div class="sb" style="text-align:right">sessions</div></div>${B(u.risk)}</div>`).join('')}
+    </div>
+  </div>
+  <div class="panel" id="t-epapps">
+    <div class="panel-h"><span class="title">Endpoint AI Applications</span><span class="counter">4</span><div class="spacer"></div>
+      <span class="cap2">AI running on the machine, with access to local resources</span></div>
+    <table><thead><tr><th>Application</th><th>Type</th><th>Endpoints</th><th>Domain access</th><th>Status</th><th>Risk</th><th></th></tr></thead><tbody>
+      ${endpointApps.map(a=>`<tr ${a.id==='openclaw'?'id="t-openclaw"':''} onclick="go('endpointapp','${a.id}')">
+        <td><div class="svc">${svcA(a.name.slice(0,2),'#9b8cff')}<span>${a.name}</span></div></td>
+        <td class="t-sec">${a.kind}</td><td><span class="counter">${a.eps}</span></td>
+        <td><span class="tag">${I('globe')} ${a.domains} connectors</span></td>
+        <td><span class="dot ${a.status==='Active'?'on':'off'}"></span> ${a.status}</td><td>${B(a.risk)}</td>
+        <td class="row-actions"><span class="linkish">View</span> ›</td></tr>`).join('')}
+    </tbody></table>
+  </div>`;
+}
+
+/* ---- service drill (UC2) ---- */
+function serviceDrill(id){
+  renderNav('Shadow AI');const s=services.find(x=>x.id===id)||services[0];
+  crumbs([{t:'SaaS & Cloud',go:"go('users')"},{t:'Shadow AI',go:"go('shadow')"},{t:s.name}]);
+  const rows=serviceUsers[id]||serviceUsers.chatgpt;
+  document.getElementById('content').innerHTML=`
+  <div class="fxbar"><button class="btn ghost" onclick="back()">‹ Back</button><span class="svc h6">${s.ic}${s.name}</span>${s.uns?'<span class="ctag" style="color:var(--high);background:var(--high-bg)">Unsanctioned</span>':''}</div>
+  <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)">
+    ${kpi('users','#33b6c4','Total users',String(s.users),'using this service')}
+    ${kpi('cal','#2f80ff','First seen',s.first,'in this environment')}
+    ${kpi('cal','#9b8cff','Last seen',s.last,'most recent usage')}
+  </div>
+  <div class="panel" id="t-svcusers"><div class="panel-h"><span class="title">Users of ${s.name}</span><span class="counter">${rows.length}</span></div>
+    <table><thead><tr><th>User</th><th>First seen</th><th>Last seen</th><th>Endpoint(s)</th><th></th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td><span class="linkish" onclick="event.stopPropagation();go('users')">${r.u}</span></td>
+      <td class="t-sec">${r.first}</td><td class="t-sec">${r.last}</td>
+      <td><span class="linkish" onclick="event.stopPropagation();go('host','${r.ep}')">${r.eps}</span></td><td class="row-actions">›</td></tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+/* ---- endpoint app drill (UC4) ---- */
+function endpointAppDrill(id){
+  renderNav('Shadow AI');const a=endpointApps.find(x=>x.id===id)||endpointApps[0];
+  crumbs([{t:'SaaS & Cloud',go:"go('users')"},{t:'Shadow AI',go:"go('shadow')"},{t:a.name}]);
+  const eps=appEndpoints[id]||appEndpoints.openclaw;const doms=domainAccess[id]||domainAccess.openclaw;
+  document.getElementById('content').innerHTML=`
+  <div class="fxbar"><button class="btn ghost" onclick="back()">‹ Back</button><span class="svc h6">${svcA(a.name.slice(0,2),'#9b8cff')}${a.name}</span>${B(a.risk)}<span class="tag"><span class="dot ${a.status==='Active'?'on':'off'}"></span>${a.status}</span></div>
+  <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)">
+    ${kpi('ep','#33b6c4','Endpoints running',String(a.eps),'in this environment')}
+    ${kpi('shadow','#9b8cff','Type',`<span style="font-size:16px">${a.kind}</span>`,'')}
+    ${kpi('globe','#f3a64a','Domain / connector reach',`<span style="color:var(--high)">${a.domains}</span>`,'accessible from the machine')}
+  </div>
+  <div class="graphwrap">
+    <div class="panel" style="margin:0" id="t-eps"><div class="panel-h"><span class="title">Endpoints</span><span class="counter">${eps.length}</span></div>
+      <table><thead><tr><th>Endpoint</th><th>User</th><th>First detected</th><th>Last seen</th><th>Status</th><th></th></tr></thead><tbody>
+      ${eps.map(e=>`<tr onclick="go('host','${e.epid}')"><td><span class="linkish">${e.ep}</span></td><td class="t-sec">${e.user}</td>
+        <td class="t-sec">${e.first}</td><td class="t-sec">${e.last}</td><td><span class="dot ${e.status==='Active'?'on':'off'}"></span> ${e.status}</td><td class="row-actions">›</td></tr>`).join('')}
+      </tbody></table></div>
+    <div class="panel" style="margin:0" id="t-domains"><div class="panel-h"><span class="title">Domain Access</span><div class="spacer"></div><span class="cap2">what it can reach</span></div>
+      <div class="dacard">${doms.map(d=>`<div class="dom"><div class="l"><span class="ic">${I('globe')}</span><div><div>${d.n}</div><div class="cap2">${d.t}</div></div></div>${B(d.sev)}</div>`).join('')}</div></div>
+  </div>`;
+}
+
+/* ---- Users (SSPM) ---- */
+function usersScreen(){
+  setSite('GreenLeaf Dental',false);renderNav('SaaS & Cloud');crumbs([{t:'SaaS & Cloud',go:"go('shadow')"},{t:'Users'}]);
+  document.getElementById('content').innerHTML=`
+  <div class="ins-head"><span class="chip" style="width:26px;height:26px;background:var(--high-bg);color:var(--high);border-radius:7px;display:grid;place-items:center">${I('flame')}</span>
+    <span class="title">SaaS Security Insights</span><div class="spacer"></div><span class="ins-toggle">Hide Insights <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span></div>
+  <div class="kpi-row">
+    ${kpi('users','#2f80ff','SaaS users','59','monitored')}
+    ${kpi('shield','#f3a64a','Without MFA','46','78% of users')}
+    ${kpi('idn','#9b8cff','Admin accounts','12','review privileges')}
+    ${kpiChart('Apps connected','7','M365, Teams, SharePoint…',miniBars([3,2,4,1,2,3,2],'#33b6c4'))}
+  </div>
+  <div class="tabbar">${['Risks','Users','Subdomains','AWS Buckets','AWS Addresses','Microsoft Teams','SharePoint Sites','Email Forwarding Rules'].map(t=>`<div class="tabx ${t==='Users'?'active':''}">${t}</div>`).join('')}</div>
+  <div style="display:flex;align-items:center;margin:14px 0"><div style="flex:1"></div><span class="cap2" style="margin-right:12px">Last scan: 24 Jun 2026, 4:51 AM</span><button class="btn primary" style="padding:7px 14px">${I('refresh')} Rescan</button></div>
+  <div class="panel" id="t-userstable">
+    <div class="toolbar"><div class="icon-btn">${I('filter')}</div><div class="search">${I('eye')}<input placeholder="Search…"></div>
+      <div class="spacer"></div><button class="btn outline" style="padding:6px 12px" onclick="openModal()">${I('export')} Export</button></div>
+    <table><thead><tr><th style="width:34px"></th><th>Name</th><th>External</th><th>Apps</th><th>MFA</th><th>Admin</th><th>Last login</th></tr></thead><tbody>
+    ${cloudUsers.map((u,i)=>`<tr ${i===0?'id="t-firstuser"':''} onclick="toggleUser(${i})">
+      <td><span class="expander" id="exp${i}">›</span></td>
+      <td><div class="svc"><span class="ava ava-round">${u.u.slice(0,2).toUpperCase()}</span><span class="linkish">${u.u}</span> <span class="counter">${u.apps.length}</span></div></td>
+      <td>${u.ext?'<span class="ctag" style="color:var(--olive);background:var(--olive-bg)">External</span>':'<span class="ctag" style="color:var(--text-secondary);background:#1d2740">Internal</span>'}</td>
+      <td><div style="display:flex;gap:5px">${u.apps.map(a=>`<span class="appicon" style="background:${appColors[a][0]}22;color:${appColors[a][0]}">${a[0]}</span>`).join('')}</div></td>
+      <td>${u.mfa?`<span style="color:var(--low)">${u.mfa}</span>`:'<span class="t-ter">0</span>'}</td><td>${u.admin?`<span style="color:var(--high)">${u.admin}</span>`:'0'}</td><td class="t-sec">${u.last}</td></tr>
+    <tr class="subrow" id="sub${i}" style="display:none"><td></td><td colspan="6">${u.apps.map(a=>`<div class="app-line"><span class="appicon" style="background:${appColors[a][0]}22;color:${appColors[a][0]}">${a[0]}</span> ${appColors[a][1]} — MFA: ${u.mfa?'Enabled':'Available for premium license only'} · Last login: ${u.last}</div>`).join('')}</td></tr>`).join('')}
+    </tbody></table>
+    <div style="display:flex;align-items:center;padding:12px 16px;color:var(--text-tertiary);font-size:12px"><span class="linkish" style="display:inline-flex;gap:6px;align-items:center"><svg width=14 height=14 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=1.8>${ICN.refresh}</svg> Refresh</span><div style="flex:1"></div>1–59 of 59</div>
+  </div>`;
+}
+function toggleUser(i){const sub=document.getElementById('sub'+i),exp=document.getElementById('exp'+i);const sh=sub.style.display==='none';sub.style.display=sh?'table-row':'none';exp.classList.toggle('open',sh);}
+
+/* ---- host forensics ---- */
+function hostForensics(epid){
+  setSite('GreenLeaf Dental',false);renderNav('Forensic');const name=(epid||'eps-16-131').toUpperCase();
+  crumbs([{t:'Forensic',go:"go('shadow')"},{t:'Hosts',go:"back()"},{t:name}]);
+  const tl=[{l:'First Scan',t:'06/22 12:28',i:'cal'},{l:'amsiprovider.dll',t:'06/22 12:34',i:'file'},{l:'defaultaccount',t:'06/22 12:34',i:'users'},
+    {l:'Internal Comm',t:'06/22 12:34',i:'net'},{l:'External Comm',t:'06/22 12:45',i:'wifi'},{l:'OpenClaw Agent',t:'06/23 09:02',i:'shadow'},
+    {l:'Latest Alert',t:'06/23 12:11',i:'alert'},{l:'Last Scan',t:'06/24 10:36',i:'cal'}];
+  document.getElementById('content').innerHTML=`
+  <div class="fxbar"><button class="btn ghost" onclick="back()">‹ Back</button><span class="h6">${name}</span><span class="tag">Manually Installed Agents</span><div style="flex:1"></div><button class="btn outline" style="padding:6px 12px">${I('export')} Export</button></div>
+  <div class="timeline"><div class="cap2" style="margin-bottom:12px;display:flex;align-items:center;gap:7px"><span style="width:14px;height:14px;display:inline-block;color:var(--text-tertiary)">${I('siem')}</span>Timeline</div>
+    <div class="tl-track">${tl.map(n=>`<div class="tl-node ${n.i==='alert'?'alert':''}"><div class="tl-line"></div><div class="nd">${I(n.i)}</div><div class="lab">${n.l}</div><div class="tm">${n.t}</div></div>`).join('')}</div></div>
+  <div class="graphwrap">
+    <div class="graph">
+      <svg width="100%" height="320" viewBox="0 0 620 320">
+        <defs><radialGradient id="rg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f15b5b" stop-opacity=".35"/><stop offset="1" stop-color="#f15b5b" stop-opacity="0"/></radialGradient></defs>
+        <line x1="150" y1="90" x2="320" y2="160" stroke="#2a3a55" stroke-width="1.5"/><line x1="150" y1="160" x2="320" y2="160" stroke="#2a3a55" stroke-width="1.5"/><line x1="150" y1="230" x2="320" y2="160" stroke="#2a3a55" stroke-width="1.5"/>
+        ${node(150,90,'file','Files','#5aa0ff')}${node(150,160,'users','Users','#5aa0ff')}${node(150,230,'net','Network','#5aa0ff')}
+        <circle cx="350" cy="160" r="64" fill="url(#rg)"/><circle cx="350" cy="160" r="44" fill="#160f16" stroke="#f15b5b" stroke-width="2.5"/>
+        <text x="350" y="167" text-anchor="middle" fill="#f15b5b" font-size="24" font-weight="700" font-family="Inter">1000</text>
+        <text x="350" y="240" text-anchor="middle" fill="#9aabc2" font-size="12" font-family="Inter">${name}</text>
+        <text x="350" y="256" text-anchor="middle" fill="#6b7a93" font-size="11" font-family="Inter">Manually Installed Agents</text>
+      </svg>
+    </div>
+    <div class="risk">
+      <div class="ri"><div class="ico" style="background:var(--critical-bg);color:var(--critical)">${I('alert')}</div><div>High/critical alerts in the last 7 days</div><span class="sc" style="background:var(--critical-bg);color:var(--critical)">1000</span></div>
+      <div class="ri"><div class="ico" style="background:var(--info-bg);color:var(--info)">${I('file')}</div><div>Very high number of certificates installed</div><span class="sc" style="background:var(--info-bg);color:var(--info)">90</span></div>
+      <div class="ri"><div class="ico" style="background:var(--high-bg);color:var(--high)">${I('shadow')}</div><div>Runs an unsanctioned endpoint AI application</div><span class="sc" style="background:var(--high-bg);color:var(--high)">95</span></div>
+      <div class="ri"><div class="ico" style="background:var(--info-bg);color:var(--info)">${I('idn')}</div><div>Has a unique Administrator user</div><span class="sc" style="background:var(--info-bg);color:var(--info)">90</span></div>
+    </div>
+  </div>
+  <div class="panel"><div class="tabbar" id="fxtabs">${['Details','Alerts','Files','Users','Logins','Traffic','System','File Monitor','Windows Events'].map((t,i)=>`<div class="tabx ${i===0?'active':''}" onclick="fxtab(this)">${t}</div>`).join('')}</div>
+    <div class="detail-grid">
+      <div class="detail-col"><h4>Host Properties</h4>
+        <div class="kv"><span class="k">Host Name</span><span class="v">${name}</span></div><div class="kv"><span class="k">Group</span><span class="v">Manually Installed Agents</span></div>
+        <div class="kv"><span class="k">Last Known IP</span><span class="v">192.168.16.131</span></div><div class="kv"><span class="k">Operating System</span><span class="v">Windows Server 2025 x64</span></div><div class="kv"><span class="k">Idle Time</span><span class="v">1246 (m)</span></div></div>
+      <div class="detail-col"><h4>Host Performance</h4>
+        <div class="kv"><span class="k"># Handles</span><span class="v">42,316</span></div><div class="kv"><span class="k"># Processes</span><span class="v">120</span></div><div class="kv"><span class="k"># Threads</span><span class="v">1,056</span></div><div class="kv"><span class="k">Total CPU</span><span class="v">50%</span></div><div class="kv"><span class="k">System Partition</span><span class="v">89.23 GB</span></div></div>
+      <div class="detail-col"><h4>Host Overview</h4>
+        <div class="kv"><span class="k">First Scan</span><span class="v">22 Jun 2026 15:28</span></div><div class="kv"><span class="k">Last Scan</span><span class="v">24 Jun 2026 13:36</span></div>
+        <h4 style="margin-top:18px">Antivirus</h4><div class="kv"><span class="k">Status</span><span class="v" style="color:var(--low)">Running</span></div><div class="kv"><span class="k">Database Date</span><span class="v">23 Jun 2026 11:00</span></div></div>
+    </div></div>`;
+}
+function node(x,y,icon,label,color){
+  return `<g font-family="Inter"><circle cx="${x}" cy="${y}" r="26" fill="#141d30" stroke="${color}" stroke-width="1.5"/>
+    <g transform="translate(${x-9},${y-15})" stroke="${color}" stroke-width="1.6" fill="none" opacity=".9" style="width:18px">${ICN[icon]}</g>
+    <text x="${x}" y="${y+40}" text-anchor="middle" fill="#9aabc2" font-size="12">${label}</text></g>`;
+}
+function fxtab(el){document.querySelectorAll('#fxtabs .tabx').forEach(t=>t.classList.remove('active'));el.classList.add('active');if(el.textContent!=='Details')toast('“'+el.textContent+'” — forensic data preserved from the existing host view');}
+
+/* ===================== misc ===================== */
+function openModal(){document.getElementById('blanket').classList.add('show');}
+function closeModal(){document.getElementById('blanket').classList.remove('show');}
+let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2400);}
+document.getElementById('collapseBtn').onclick=()=>document.getElementById('side').classList.toggle('collapsed');
+
+/* ===================== walkthrough ===================== */
+const scenarios=[
+  {id:'s1',name:'First look',persona:'CISO / Security Manager',
+    desc:'Gain full visibility into AI tool adoption — move from blind to informed: which GenAI services and endpoint AI applications are present, when they were first seen, and how widely they are adopted across the organization.',
+    scenario:'The security manager at GreenLeaf Dental has no clear picture of which AI tools are being used across the company. She opens Shadow AI to get the whole inventory in a single screen.',
+    flow:['Open Shadow AI','Read the KPIs','Scan GenAI services','Scan endpoint AI apps'],
+    steps:[
+      {nav:{s:'shadow'},sel:'#t-kpis',tt:'The picture she never had',tx:'The security manager opens Shadow AI and instantly sees the scope — 6 GenAI services, 187 users and 4 endpoint AI applications. No more guessing what AI is in the environment.'},
+      {sel:'#t-services',tt:'Which services, and how widely',tx:'She scans the GenAI services — ChatGPT, Copilot, Gemini, Claude — each with when it first appeared and how many people use it. She can finally answer “what AI are we using?”'},
+      {sel:'#t-epapps',tt:'AI on the machines themselves',tx:'She also spots AI running locally on endpoints — model runners and an autonomous agent — exposure that browser-only monitoring would never reveal.'},
+    ]},
+  {id:'s2',name:'Unsanctioned usage',persona:'IT / Security Generalist',
+    desc:'Assess risk from unauthorized AI usage — quantify how much AI activity happens through unapproved or unsanctioned services, and investigate specific instances to decide whether sensitive data may be at risk.',
+    scenario:'The IT person heard that DeepSeek is not an approved tool. He wants to know whether anyone in the company is using it, and whether sensitive data could be leaving through it.',
+    flow:['Open Shadow AI','Spot the flagged service','Open DeepSeek','See users & endpoints','Drill to the host'],
+    steps:[
+      {nav:{s:'shadow'},sel:'#t-deepseek',tt:'A service he never approved',tx:'On the Shadow AI page, DeepSeek shows up flagged as unsanctioned. The IT person clicks in to find out who is behind it.'},
+      {nav:{s:'service',p:'deepseek'},sel:'#t-svcusers',tt:'Who used it, and where',tx:'Two users appear — one on a managed endpoint, one in an unmanaged session. Now he can weigh whether sensitive data was exposed.'},
+      {sel:'#t-svcusers',tt:'Follow the trail',tx:'From here he jumps to the endpoint to open host forensics, or to the user record — to see exactly what that person could reach.'},
+    ]},
+  {id:'s3',name:'Top-risk users',persona:'SOC Analyst',
+    desc:'Prioritize user-level AI exposure — identify which users represent the highest AI-related risk through heavy use of unsanctioned or sensitive services, and investigate them first.',
+    scenario:'The SOC analyst has limited time and wants to focus where it matters. Who are the heaviest AI users, and how exposed are their accounts?',
+    flow:['Open Shadow AI','Open Top GenAI Users','Pick the heaviest user','Open the cloud-user record','Review per-app exposure'],
+    steps:[
+      {nav:{s:'shadow'},sel:'#t-topusers',tt:'Where to focus first',tx:'The analyst checks the Top GenAI Users widget. r.azoulay tops the list — 412 sessions across 5 services — clearly the user to look at first.'},
+      {nav:{s:'users'},sel:'#t-firstuser',tt:'How exposed is that identity?',tx:'He opens the existing cloud-user record and expands it to see MFA, admin rights and last login per app — the full exposure behind the heavy AI usage.'},
+    ]},
+  {id:'s4',name:'Endpoint AI apps',persona:'SOC Analyst',
+    desc:'Prioritize AI risk on endpoints — find endpoint AI applications that expand the attack surface (local access plus broad domain/connector reach), tell Active from Inactive, and investigate the riskiest.',
+    scenario:'The SOC analyst noticed an autonomous AI agent running on company machines and wants to understand what it can actually touch before it becomes an incident.',
+    flow:['Open Shadow AI','Open OpenClaw Agent','Review domain access','Active vs Inactive','Drill to the host'],
+    steps:[
+      {nav:{s:'shadow'},sel:'#t-openclaw',tt:'An agent with a mind of its own',tx:'OpenClaw Agent is flagged critical and runs on 3 endpoints. The analyst opens it to see what it can reach.'},
+      {nav:{s:'endpointapp',p:'openclaw'},sel:'#t-domains',tt:'Its real attack surface',tx:'Domain Access lays out everything the agent can reach — Google Drive, GitHub, even the internal CRM. Local access plus this reach is exactly the high-risk case.'},
+      {sel:'#t-eps',tt:'From app to host',tx:'He confirms which instances are Active, then drills into a specific endpoint to open host forensics and investigate.'},
+    ]},
+  {id:'s5',name:'Cross-client triage',persona:'MSP Technician',
+    desc:'Prioritize which client needs attention today — identify the customer with the most significant AI-related exposure without reviewing every client individually.',
+    scenario:'The MSP technician manages many clients and starts the day with limited time. Which customer has the biggest AI problem right now?',
+    flow:['Open MSSP dashboard','Read AI exposure per client','Pick the most exposed','Enter that client’s Shadow AI'],
+    steps:[
+      {nav:{s:'mssp'},sel:'#t-mssp-kpi',tt:'All clients at a glance',tx:'At MSSP level the technician sees AI exposure across every customer at once — services, endpoint AI apps and unmanaged usage.'},
+      {sel:'#t-mssp-row',tt:'Go where it hurts most',tx:'GreenLeaf Dental is flagged critical today. He opens it and drops straight into its Shadow AI view — no need to check every client one by one.'},
+    ]},
+  {id:'s6',name:'Report & export',persona:'CISO / Compliance',
+    desc:'Report for compliance and leadership — produce a clear, non-technical summary of AI usage for a board update, a client-facing report, or an audit submission.',
+    scenario:'The CISO has a board meeting and needs to show that the company’s AI risk is understood and under control — without dumping raw data on the executives.',
+    flow:['Open Shadow AI','Click Export','Choose a format','Share with leadership'],
+    steps:[
+      {nav:{s:'shadow'},sel:'#t-export',tt:'Time to brief the board',tx:'When leadership asks “what are we doing about AI?”, the CISO clicks Export from the Shadow AI page.'},
+      {action:openModal,sel:'#t-repopts',tt:'A story they can read',tx:'She picks an executive summary — or a co-branded client report — that tells the AI-risk story in plain language, no raw data required.'},
+    ]},
+];
+let pendingScn=null;
+function renderScnbar(){
+  document.getElementById('scnbar').innerHTML=
+    `<span class="lbl">${'<svg width=16 height=16 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=1.8>'+ICN.bolt+'</svg>'} Guided scenarios:</span>`+
+    scenarios.map((s,i)=>`<div class="scn-btn" id="scn-${s.id}" onclick="openScenario('${s.id}')"><span class="num">${i+1}</span><div><div class="nm">${s.name}</div><div class="pp">${s.persona}</div></div></div>`).join('')+
+    `<span class="bar-collapse" onclick="collapseBar()" title="Collapse">✕</span>`;
+}
+function collapseBar(){document.getElementById('scnbar').classList.add('hidden');document.getElementById('scnfab').classList.add('show');}
+function expandBar(){document.getElementById('scnbar').classList.remove('hidden');document.getElementById('scnfab').classList.remove('show');}
+function openScenario(id){
+  const s=scenarios.find(x=>x.id===id);if(!s)return;pendingScn=id;
+  const i=scenarios.indexOf(s)+1;
+  document.getElementById('scnModalTitle').textContent=`${i}. ${s.name}`;
+  document.getElementById('scnModalBody').innerHTML=
+    `<span class="pchip" style="display:inline-flex;align-items:center;gap:6px;background:var(--guide-bg);color:var(--guide-2);border-radius:14px;padding:3px 10px;font-size:12px;font-weight:700">${'<svg width=13 height=13 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2>'+ICN.users+'</svg>'} ${s.persona}</span>
+     <div class="msec"><div class="mlab">Use case</div><div class="mtx">${s.desc}</div></div>
+     <div class="msec"><div class="mlab">Scenario in this prototype</div><div class="mtx">${s.scenario}</div></div>
+     <div class="msec"><div class="mlab">Expected workflow</div><div class="flow">${s.flow.map((f,k)=>`<div class="fstep"><span class="fn">${k+1}</span>${f}</div>${k<s.flow.length-1?'<span class="farr">→</span>':''}`).join('')}</div></div>`;
+  document.getElementById('scnBlanket').classList.add('show');
+}
+function closeScn(){document.getElementById('scnBlanket').classList.remove('show');}
+function startScenario(){document.getElementById('scnBlanket').classList.remove('show');startTour(pendingScn);}
+let tour={id:null,i:0};
+function startTour(id){tour={id,i:0};collapseBar();document.getElementById('tour').classList.add('show');
+  document.querySelectorAll('.scn-btn').forEach(b=>b.classList.remove('active'));const a=document.getElementById('scn-'+id);if(a)a.classList.add('active');
+  goStep(0);}
+function endTour(){document.getElementById('tour').classList.remove('show');document.getElementById('tourSpot').style.display='none';closeModal();document.querySelectorAll('.scn-btn').forEach(b=>b.classList.remove('active'));tour.id=null;}
+function goStep(n){
+  const sc=scenarios.find(x=>x.id===tour.id);if(!sc)return;tour.i=n;const st=sc.steps[n];
+  if(st.nav){stack=[{screen:st.nav.s,param:st.nav.p}];render(st.nav.s,st.nav.p);}
+  if(st.action)st.action();
+  // bubble content
+  const bub=document.getElementById('tourBubble');
+  bub.innerHTML=`<span class="skip" onclick="endTour()">Skip</span><span class="pchip">${'<svg width=12 height=12 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2>'+ICN.users+'</svg>'} ${sc.persona}</span>
+    <div class="tt">${st.tt}</div><div class="tx">${st.tx}</div>
+    <div class="ft"><span class="step">Step ${n+1} of ${sc.steps.length}</span>
+    ${n>0?'<button class="mini" onclick="goStep('+(n-1)+')">Back</button>':''}
+    ${n<sc.steps.length-1?'<button class="mini primary" onclick="goStep('+(n+1)+')">Next</button>':'<button class="mini primary" onclick="endTour()">Done</button>'}</div>`;
+  setTimeout(()=>placeSpot(st.sel),260);
+}
+function placeSpot(sel){
+  const spot=document.getElementById('tourSpot'),bub=document.getElementById('tourBubble');
+  const el=sel?document.querySelector(sel):null;
+  if(el){el.scrollIntoView({block:'center',behavior:'smooth'});}
+  setTimeout(()=>{
+    if(el){const r=el.getBoundingClientRect();
+      spot.style.display='block';spot.style.top=(r.top-6)+'px';spot.style.left=(r.left-6)+'px';spot.style.width=(r.width+12)+'px';spot.style.height=(r.height+12)+'px';
+      const bw=Math.min(340,innerWidth-24);const bh=bub.offsetHeight||190;
+      let bx=r.left;if(bx+bw>innerWidth-12)bx=innerWidth-bw-12;if(bx<12)bx=12;
+      let by=r.bottom+12;if(by+bh>innerHeight-12)by=Math.max(12,r.top-bh-12);
+      bub.style.left=bx+'px';bub.style.top=by+'px';
+    }else{spot.style.display='none';bub.style.left=(innerWidth/2-170)+'px';bub.style.top=(innerHeight/2-100)+'px';}
+  },180);
+}
+window.addEventListener('resize',()=>{if(tour.id!=null){const sc=scenarios.find(x=>x.id===tour.id);placeSpot(sc.steps[tour.i].sel);}});
+
+/* ===================== boot ===================== */
+renderScnbar();document.getElementById('sitePick').onclick=()=>{stack=[];render('mssp');};
+stack=[{screen:'mssp'}];render('mssp');
+</script>
+</body>
+</html>
