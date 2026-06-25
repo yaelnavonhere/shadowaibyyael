@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Cynet · Shadow AI — AI Security Posture (drawer)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-default:#0c1322;--bg-sidemenu:#0a101d;--bg-header:#0c1322;--surface:#141d30;--surface-2:#1a2440;--bg-dropdown:#141d30;--bg-blanket:rgba(6,10,18,.6);
+  --table-hover:#161f36;--menu-hover:#131c2f;--menu-selected:#2f80ff;--btn-primary:#2f80ff;--btn-outline:rgba(255,255,255,.16);
+  --text-primary:#e8eef9;--text-secondary:#9aabc2;--text-tertiary:#6b7a93;--text-link:#5aa0ff;--text-link-hover:#7db4ff;
+  --critical:#f15b5b;--critical-bg:#3a1d22;--high:#f3a64a;--high-bg:#382816;--medium:#f0c64a;--medium-bg:#332d15;--low:#46c08d;--low-bg:#14302a;--info:#5aa0ff;--info-bg:#142540;
+  --purple:#9b8cff;--purple-bg:#241f44;--teal:#33b6c4;
+  --hairline:rgba(255,255,255,.07);
+  --guide:#ff3d92;--guide-2:#ff7ab8;--guide-bg:#3a1830;--guide-line:rgba(255,61,146,.5);--guide-d:#e22a7e;--guide-lt:#ffd2e6;--guide-soft:rgba(255,255,255,.15);
+  --radius:12px;--radius-sm:8px;
+}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg-default);color:var(--text-primary);font-size:14px;line-height:20px;-webkit-font-smoothing:antialiased}
+.h6{font-size:20px;line-height:28px;font-weight:600}.sub2{font-size:14px;font-weight:600}.cap2{font-size:12px;line-height:16px;color:var(--text-secondary)}
+.t-sec{color:var(--text-secondary)}.t-ter{color:var(--text-tertiary)}
+a,.linkish{color:var(--text-link);text-decoration:none;cursor:pointer}a:hover,.linkish:hover{color:var(--text-link-hover)}
+.app{display:flex;min-height:100vh}
+.side{width:230px;flex:0 0 230px;background:var(--bg-sidemenu);border-right:1px solid var(--hairline);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.logo{display:flex;align-items:center;gap:10px;padding:18px 18px 14px;font-weight:700;font-size:18px;color:#fff}
+.nav{flex:1;overflow-y:auto;padding:6px 10px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;color:var(--text-secondary);cursor:pointer;margin-bottom:2px;font-size:14px;white-space:nowrap}
+.nav-item:hover{background:var(--menu-hover);color:var(--text-primary)}.nav-item.active{background:var(--menu-selected);color:#fff;font-weight:600}.nav-item.active svg{stroke:#fff}
+.nav-item svg{flex:0 0 18px;width:18px;height:18px;stroke:var(--text-tertiary);fill:none;stroke-width:1.7}.nav-item .chev{margin-left:auto;opacity:.5}
+.collapse{padding:12px 18px;border-top:1px solid var(--hairline);color:var(--text-tertiary);cursor:pointer;font-size:18px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{height:62px;display:flex;align-items:center;gap:12px;padding:0 22px;background:var(--bg-header);border-bottom:1px solid var(--hairline);position:sticky;top:0;z-index:30}
+.crumbs{display:flex;align-items:center;gap:8px;color:var(--text-tertiary);font-size:13px}.crumbs b{color:var(--text-primary);font-weight:600;font-size:20px;line-height:28px}.crumbs .sep{opacity:.45}
+.topbar .spacer{flex:1}
+.tb-icon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--text-secondary);cursor:pointer}.tb-icon:hover{background:var(--menu-hover);color:var(--text-primary)}
+.tb-icon.help{background:var(--guide);color:#fff}.tb-icon.ai{background:linear-gradient(135deg,#7c5cff,#33b6c4);color:#fff}
+.sitepick{display:flex;align-items:center;gap:9px;background:var(--surface-2);border:1px solid var(--hairline);border-radius:9px;padding:7px 12px;cursor:pointer;font-size:14px}.sitepick .sq{width:18px;height:18px;border-radius:5px;background:var(--btn-primary)}
+.content{padding:20px 22px;max-width:1720px;width:100%}
+.ins-head{display:flex;align-items:center;gap:10px;margin:2px 0 12px}.ins-head .title{font-size:16px;font-weight:600}.ins-head .spacer{flex:1}.ins-toggle{color:var(--text-secondary);font-size:13px;cursor:pointer;display:flex;gap:6px;align-items:center}
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius);padding:13px 15px;min-height:92px}
+.kpi .top{display:flex;align-items:center;gap:9px}.kpi .chip{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;flex:0 0 30px}
+.kpi .lab{font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-secondary);font-weight:600;line-height:14px}
+.kpi .val{font-size:26px;line-height:30px;font-weight:700;margin-top:8px}.kpi .sub{color:var(--text-tertiary);font-size:11px;margin-top:3px}
+.insights{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.insight{background:var(--surface);border:1px solid var(--hairline);border-left:3px solid var(--info);border-radius:var(--radius-sm);padding:10px 13px;font-size:13px;display:flex;gap:9px;align-items:flex-start}
+.insight.warn{border-left-color:var(--high)}.insight.crit{border-left-color:var(--critical)}.insight svg{stroke:var(--text-secondary);flex:0 0 16px;margin-top:1px}
+.panel{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.panel-h{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--hairline)}.panel-h .title{font-size:15px;font-weight:600}.panel-h .spacer{flex:1}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.toolbar{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--hairline)}
+.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--hairline);background:var(--bg-default);display:grid;place-items:center;color:var(--text-secondary);cursor:pointer}
+.search{display:flex;align-items:center;gap:8px;background:var(--bg-default);border:1px solid var(--hairline);border-radius:9px;padding:8px 12px;color:var(--text-tertiary);flex:1;max-width:420px}.search input{background:none;border:none;outline:none;color:var(--text-primary);font:inherit;width:100%}
+.toolbar .spacer{flex:1}
+.btn{display:inline-flex;align-items:center;gap:7px;border-radius:9px;padding:8px 14px;font:inherit;font-weight:500;cursor:pointer;border:1px solid transparent}
+.btn.primary{background:var(--btn-primary);color:#fff}.btn.outline{background:transparent;border-color:var(--btn-outline);color:var(--text-primary)}.btn.ghost{background:transparent;color:var(--text-link)}
+.btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px;padding:11px 16px;border-bottom:1px solid var(--hairline)}
+tbody td{padding:12px 16px;border-bottom:1px solid var(--hairline);font-size:14px;vertical-align:middle}
+tbody tr{cursor:pointer}tbody tr:hover{background:var(--table-hover)}tbody tr:last-child td{border-bottom:none}
+.row-actions{text-align:right;white-space:nowrap;color:var(--text-tertiary)}
+.svc{display:flex;align-items:center;gap:10px}.ava{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:700}.ava-round{border-radius:50%;background:var(--surface-2);color:var(--text-secondary)}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.badge.crit{color:var(--critical);background:var(--critical-bg)}.badge.high{color:var(--high);background:var(--high-bg)}.badge.med{color:var(--medium);background:var(--medium-bg)}.badge.low{color:var(--low);background:var(--low-bg)}.badge.info{color:var(--info);background:var(--info-bg)}
+.tag{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--hairline);border-radius:6px;padding:2px 8px;font-size:12px;color:var(--text-secondary)}.tag svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8}
+.ctag{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600}
+.counter{background:#1d2740;color:var(--text-secondary);border-radius:11px;font-size:12px;padding:1px 8px;font-weight:600}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}.dot.on{background:var(--low)}.dot.off{background:var(--text-tertiary)}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:13px}.kv .k{color:var(--text-secondary)}.kv .v{text-align:right}
+.risk .ri{display:flex;align-items:center;gap:12px;padding:8px 0}.risk .ri .ico{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:0 0 32px}.risk .ri .sc{margin-left:auto;font-weight:700;border-radius:14px;padding:2px 9px;font-size:12px}
+.summary-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}.stile{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius);padding:18px 20px;text-align:center}.stile .n{font-size:26px;font-weight:700}.stile .l{color:var(--text-secondary);font-size:13px;margin-top:2px}
+.tabbar{display:flex;gap:2px;border-bottom:1px solid var(--hairline);overflow-x:auto}.tabx{padding:12px 16px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;font-size:14px;border-bottom:2px solid transparent}.tabx.active{color:var(--text-primary);border-bottom-color:var(--btn-primary);font-weight:600}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding:18px}.detail-col h4{margin:0 0 10px;color:var(--text-link);font-size:12px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;border-bottom:1px solid var(--hairline);padding-bottom:8px}
+/* drawer */
+.drawer-scrim{position:fixed;inset:0;background:var(--bg-blanket);display:none;z-index:90}.drawer-scrim.show{display:block}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:560px;max-width:94vw;background:var(--bg-dropdown);border-left:1px solid var(--hairline);box-shadow:-16px 0 50px rgba(0,0,0,.5);transform:translateX(100%);transition:transform .28s ease;z-index:95;display:flex;flex-direction:column}
+.drawer.show{transform:translateX(0)}
+.drawer-h{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--hairline)}
+.dcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-tertiary);flex-wrap:wrap}.dcrumb .lk{color:var(--text-link);cursor:pointer}.dcrumb .cur{color:var(--text-primary);font-weight:600}.dcrumb .sp{opacity:.45}
+.drawer-x{margin-left:auto;cursor:pointer;color:var(--text-secondary);width:30px;height:30px;border-radius:8px;display:grid;place-items:center}.drawer-x:hover{background:var(--menu-hover);color:var(--text-primary)}
+.drawer-body{overflow-y:auto;flex:1}
+.dsec{padding:14px 18px;border-bottom:1px solid var(--hairline)}.dsec:last-child{border-bottom:none}
+.dsec .dlab{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-tertiary);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sumrow{display:flex;gap:22px;flex-wrap:wrap}.sumrow .si{font-size:12px;color:var(--text-secondary)}.sumrow .si b{color:var(--text-primary);font-size:20px;display:block;font-weight:700}
+.dom{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--hairline);cursor:pointer}.dom:last-child{border-bottom:none}.dom:hover{background:var(--table-hover)}
+.dom .l{display:flex;align-items:center;gap:11px}.dom .ic{width:30px;height:30px;border-radius:8px;background:var(--surface-2);display:grid;place-items:center;color:var(--text-secondary)}
+.mini-tl{display:flex;overflow-x:auto;padding-bottom:4px}.mini-tl .n{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;min-width:80px;position:relative}.mini-tl .n .d{width:30px;height:30px;border-radius:8px;background:var(--surface-2);display:grid;place-items:center;color:var(--text-secondary);z-index:2}.mini-tl .n.al .d{background:var(--critical-bg);color:var(--critical)}.mini-tl .n .ln{position:absolute;top:15px;left:50%;width:100%;height:2px;background:var(--hairline)}.mini-tl .n:last-child .ln{display:none}.mini-tl .n .lb{font-size:10px;color:var(--text-tertiary);text-align:center}
+/* modal + toast + guide (same as other prototype) */
+.blanket{position:fixed;inset:0;background:var(--bg-blanket);display:none;align-items:center;justify-content:center;z-index:120}.blanket.show{display:flex}
+.modal{background:var(--bg-dropdown);border:1px solid var(--hairline);border-radius:14px;width:600px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal-h{display:flex;align-items:center;padding:18px 20px;border-bottom:1px solid var(--hairline)}.modal-h .tt{font-size:18px;font-weight:600}.modal-h .x{margin-left:auto;cursor:pointer;color:var(--text-secondary)}
+.modal-b{padding:20px}.modal-f{display:flex;justify-content:flex-end;gap:10px;padding:16px 20px;border-top:1px solid var(--hairline)}
+.msec{margin-top:15px}.msec .mlab{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--guide-2);font-weight:600;margin-bottom:6px}.msec .mtx{font-size:13px;color:var(--text-secondary);line-height:19px}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.fstep{background:var(--surface-2);border:1px solid var(--hairline);border-radius:8px;padding:7px 11px;font-size:12px}.fstep .fn{color:var(--guide);font-weight:700;margin-right:6px}.farr{color:var(--guide-2)}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--hairline);border-radius:10px;padding:12px 18px;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:200;display:none}.toast.show{display:block}
+.scnbar{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--guide);border:1px solid var(--guide-d);border-radius:13px;box-shadow:0 10px 28px rgba(0,0,0,.4);position:fixed;top:72px;left:246px;right:16px;z-index:45;overflow-x:auto}.scnbar.hidden{display:none}
+.scnbar .lbl{display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;white-space:nowrap;font-weight:600}.scnbar .lbl svg{stroke:#fff}
+.scn-btn{display:flex;align-items:center;gap:9px;background:var(--guide-soft);border:1px solid rgba(255,255,255,.28);border-radius:9px;padding:6px 11px;cursor:pointer;color:#fff}.scn-btn .num{width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,.28);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}.scn-btn .nm{font-size:13px;font-weight:600;line-height:14px}.scn-btn .pp{font-size:11px;color:var(--guide-lt);line-height:13px}
+.bar-collapse{margin-left:6px;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:#fff;cursor:pointer;border:1px solid rgba(255,255,255,.32)}
+.scnfab{position:fixed;top:74px;right:18px;width:46px;height:46px;border-radius:50%;background:var(--guide);color:#fff;display:none;place-items:center;cursor:pointer;z-index:45;box-shadow:0 6px 18px rgba(0,0,0,.4)}.scnfab.show{display:grid}
+#scnBlanket .modal{background:var(--guide);border:none}#scnBlanket .modal-h{border-bottom-color:rgba(255,255,255,.22)}#scnBlanket .modal-h .tt,#scnBlanket .modal-h .x{color:#fff}
+#scnBlanket .msec .mlab{color:var(--guide-lt)}#scnBlanket .msec .mtx{color:#fff}#scnBlanket .pchip{background:rgba(255,255,255,.2);color:#fff}#scnBlanket .fstep{background:var(--guide-soft);border-color:rgba(255,255,255,.28);color:#fff}#scnBlanket .fstep .fn{color:#fff}#scnBlanket .farr{color:var(--guide-lt)}#scnBlanket .modal-f{border-top-color:rgba(255,255,255,.22)}#scnBlanket .btn.guide{background:#fff;color:var(--guide);border:none}#scnBlanket .btn.outline{border-color:rgba(255,255,255,.55);color:#fff}
+.pchip{display:inline-flex;align-items:center;gap:6px;border-radius:14px;padding:3px 10px;font-size:12px;font-weight:700}
+#tour{position:fixed;inset:0;z-index:100;display:none}#tour.show{display:block}.tour-block{position:absolute;inset:0}
+.tour-spot{position:fixed;border:2px solid var(--guide);border-radius:10px;box-shadow:0 0 0 9999px rgba(7,11,20,.74);transition:all .25s ease;pointer-events:none;display:none}
+.tour-bubble{position:fixed;width:350px;max-width:90vw;background:var(--guide);border:1px solid var(--guide-d);border-radius:12px;box-shadow:0 16px 50px rgba(0,0,0,.55);padding:16px;z-index:102}
+.tour-bubble .pchip{background:rgba(255,255,255,.2);color:#fff;margin-bottom:8px}.tour-bubble .tt{font-size:15px;font-weight:600;margin-bottom:5px;color:#fff}.tour-bubble .tx{font-size:13px;color:var(--guide-lt);line-height:19px}
+.tour-bubble .ft{display:flex;align-items:center;gap:8px;margin-top:14px}.tour-bubble .step{font-size:12px;color:var(--guide-lt);margin-right:auto}.tour-bubble .mini{background:transparent;border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font:inherit}.tour-bubble .mini.primary{background:#fff;color:var(--guide);border-color:#fff}.tour-bubble .skip{position:absolute;top:12px;right:14px;color:var(--guide-lt);cursor:pointer;font-size:12px}
+@media (max-width:1250px){.kpi-row{grid-template-columns:1fr 1fr}.insights{grid-template-columns:1fr}.cols2{grid-template-columns:1fr}.detail-grid,.summary-tiles{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side"><div class="logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#2f80ff" stroke-width="2"/><circle cx="12" cy="12" r="3.4" fill="#2f80ff"/></svg><span>cynet</span></div><nav class="nav" id="nav"></nav><div class="collapse">&laquo;</div></aside>
+  <div class="main">
+    <header class="topbar"><div class="crumbs" id="crumbs"></div><div class="spacer"></div>
+      <div class="sitepick"><span class="sq"></span><span>GreenLeaf Dental</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="tb-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg></div>
+      <div class="tb-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+      <div class="tb-icon ai"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l1.7 4.1L18 9l-4.3 1.9L12 15l-1.7-4.1L6 9z"/></svg></div>
+      <div class="tb-icon help"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.1 9a3 3 0 115.8 1c0 2-3 2-3 4"/><circle cx="12" cy="17.5" r=".6" fill="currentColor"/></svg></div>
+    </header>
+    <div class="scnbar" id="scnbar"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+<div class="drawer-scrim" id="scrim" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer"><div class="drawer-h"><div class="dcrumb" id="dcrumb"></div><div class="drawer-x" onclick="closeDrawer()">✕</div></div><div class="drawer-body" id="drawer-body"></div></aside>
+<div class="scnfab" id="scnfab" onclick="expandBar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M13 3L4 14h6l-1 7 9-11h-6z"/></svg></div>
+<div class="blanket" id="scnBlanket"><div class="modal"><div class="modal-h"><div class="tt" id="scnTitle"></div><div class="x" onclick="closeScn()">✕</div></div><div class="modal-b" id="scnBody"></div><div class="modal-f"><button class="btn outline" onclick="closeScn()">Cancel</button><button class="btn guide" onclick="startScenario()">Start walkthrough ›</button></div></div></div>
+<div class="toast" id="toast"></div>
+<div id="tour"><div class="tour-block"></div><div class="tour-spot" id="tourSpot"></div><div class="tour-bubble" id="tourBubble"></div></div>
+<script>
+const ic=(p,sw,sz)=>`<svg width="${sz||16}" height="${sz||16}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw||1.8}">${p}</svg>`;
+const ICN={dash:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',alert:'<path d="M12 4l8 14H4z"/><path d="M12 10v3"/><circle cx="12" cy="16" r=".5" fill="currentColor"/>',eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',siem:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',act:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/>',idn:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="12" r="2.4"/><path d="M13 10h5M13 14h5"/>',ep:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/>',cloud:'<path d="M6 16a4 4 0 010-8 5 5 0 019.6-1.5A4 4 0 0118 16z"/>',shadow:'<path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9z"/><path d="M6 19h12"/>',rep:'<path d="M5 4h14v16H5z"/><path d="M9 9v7M13 7v9M17 11v5"/>',set:'<circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 010-2"/>',users:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5"/><path d="M16 5.2a3 3 0 010 5.6M21 20c0-2.6-1.6-4.3-4-4.8"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18"/>',file:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>',net:'<circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="M7.5 7.5l3 8M16.5 7.5l-3 8"/>',export:'<path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/>',filter:'<path d="M3 5h18M6 12h12M10 19h4"/>',refresh:'<path d="M21 12a9 9 0 11-3-6.7M21 4v4h-4"/>',cal:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/>',group:'<circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M2 19c0-3 2.5-4.5 6-4.5s6 1.5 6 4.5M14 14.6c2.8.3 5 1.8 5 4.4"/>',bolt:'<path d="M13 3L4 14h6l-1 7 9-11h-6z"/>'};
+const I=(n,sw,sz)=>ic(ICN[n],sw,sz);
+const svcA=(t,c)=>`<span class="ava" style="background:${c}22;color:${c}">${t}</span>`;
+const services=[{id:'chatgpt',name:'ChatGPT',ic:svcA('GPT','#10a37f'),users:142,agents:1},{id:'copilot',name:'Microsoft Copilot',ic:svcA('Co','#2f80ff'),users:133,agents:0},{id:'gemini',name:'Google Gemini',ic:svcA('Ge','#e8703a'),users:88,agents:0},{id:'claude',name:'Claude',ic:svcA('Cl','#d97757'),users:61,agents:0}];
+const aiApps=[{id:'openclaw',name:'OpenClaw Agent',on:'ChatGPT',eps:3,risk:'crit'},{id:'ollama',name:'Ollama',on:'—',eps:12,risk:'high'},{id:'cursor',name:'Cursor',on:'—',eps:19,risk:'med'}];
+const chatgptDomains=[{n:'salesforce.com',t:'CRM / customer data',sev:'crit',users:4},{n:'drive.google.com',t:'Cloud storage',sev:'high',users:3},{n:'github.com',t:'Source code',sev:'high',users:2},{n:'api.openai.com',t:'External LLM API',sev:'med',users:4}];
+const salesforceUsers=[{u:'r.azoulay@greenleaf.com',group:'Manually Installed Agents',host:'EPS-16-131',hid:'eps-16-131',last:'2h ago'},{u:'a.cohen@greenleaf.com',group:'Windows Servers',host:'EPS-16-175',hid:'eps-16-175',last:'35m ago'},{u:'t.banai@greenleaf.com',group:'Manually Installed Agents',host:'EPS-16-202',hid:'eps-16-202',last:'1h ago'},{u:'m.levi@greenleaf.com',group:'TzviTestGroup',host:'DESKTOP-T1PA5S2',hid:'desktop-t1pa5s2',last:'4h ago'}];
+const endpoints=[{ep:'EPS-16-202',ip:'192.168.16.202',group:'Manually Installed Agents'},{ep:'EPS-16-131',ip:'192.168.16.131',group:'Manually Installed Agents'},{ep:'EPS-16-175',ip:'192.168.16.175',group:'Windows Servers'},{ep:'Timi-Dogfood',ip:'192.168.3.47',group:'Manually Installed Agents'},{ep:'DESKTOP-T1PA5S2',ip:'172.23.42.0',group:'TzviTestGroup'}];
+const sevMap={crit:['CRITICAL','crit'],high:['HIGH','high'],med:['MEDIUM','med'],low:['LOW','low'],info:['INFO','info']};
+const B=(s,t)=>`<span class="badge ${sevMap[s][1]}">${t||sevMap[s][0]}</span>`;
+const kpi=(icon,color,lab,val,sub)=>`<div class="kpi"><div class="top"><span class="chip" style="background:${color}1f;color:${color}">${I(icon)}</span><span class="lab">${lab}</span></div><div class="val">${val}</div><div class="sub">${sub}</div></div>`;
+const navItems=[{k:'Overview',i:'dash'},{k:'Alerts',i:'alert'},{k:'Forensic',i:'eye',t:'host'},{k:'SIEM',i:'siem'},{k:'Actions',i:'act'},{k:'Endpoints',i:'ep',chev:true,t:'endpoints'},{k:'SaaS & Cloud',i:'cloud',chev:true},{k:'Shadow AI',i:'shadow',t:'shadow'},{k:'Identity',i:'idn'},{k:'Reports',i:'rep',chev:true},{k:'Settings',i:'set',chev:true}];
+function renderNav(a){document.getElementById('nav').innerHTML=navItems.map(n=>`<div class="nav-item ${n.k===a?'active':''}" ${n.t?`onclick="go('${n.t}')"`:''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">${ICN[n.i]}</svg><span>${n.k}</span>${n.chev?'<span class="chev">›</span>':''}</div>`).join('');}
+let stack=[];function go(s,p){stack.push({s,p});render(s,p);window.scrollTo(0,0);}function back(){stack.pop();const c=stack[stack.length-1]||{s:'shadow'};render(c.s,c.p);}
+function crumbs(a){document.getElementById('crumbs').innerHTML=a.map((c,i)=>i===a.length-1?`<b>${c.t}</b>`:`<span style="color:var(--text-link);cursor:pointer" ${c.go?`onclick="${c.go}"`:''}>${c.t}</span><span class="sep">›</span>`).join(' ');}
+function render(s,p){({shadow:shadowMain,endpoints:endpointsMgmt,host:hostForensics,userf:userForensics}[s]||shadowMain)(p);}
+
+/* ---------- Shadow AI page (tables) ---------- */
+function shadowMain(){renderNav('Shadow AI');crumbs([{t:'SaaS & Cloud'},{t:'Shadow AI'}]);
+ document.getElementById('content').innerHTML=`
+ <div class="ins-head"><span class="chip" style="width:26px;height:26px;background:var(--high-bg);color:var(--high);border-radius:7px;display:grid;place-items:center">${I('shadow')}</span><span class="title">AI Security Posture</span><div class="spacer"></div><span class="ins-toggle">Hide Insights <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span></div>
+ <div class="kpi-row" id="t-kpis">${kpi('users','#33b6c4','Users using AI','187','of 240 endpoints')}${kpi('cloud','#2f80ff','GenAI services','4','1 with an agent')}${kpi('shadow','#9b8cff','Endpoint AI applications','3','1 autonomous agent')}</div>
+ <div class="insights"><div class="insight crit">${I('alert')}<div>An autonomous agent (<b>OpenClaw</b>) is running on <b>ChatGPT</b></div></div><div class="insight warn">${I('globe')}<div>Endpoint AI apps reach <b>salesforce.com</b> and other sensitive domains</div></div><div class="insight">${I('users')}<div><b>187</b> users across 4 GenAI services</div></div></div>
+ <div class="cols2">
+  <div class="panel" id="t-services"><div class="panel-h"><span class="title">GenAI Services</span><span class="counter">4</span></div>
+   <table><tbody>${services.map(s=>`<tr ${s.id==='chatgpt'?'id="t-chatgpt"':''} onclick="openDrawerService('${s.id}')"><td><div class="svc">${s.ic}<span>${s.name}</span></div></td><td class="t-sec">${s.users} users</td><td>${s.agents?B('crit',s.agents+' agent'):'<span class="t-ter">—</span>'}</td><td class="row-actions"><span class="linkish">View</span> ›</td></tr>`).join('')}</tbody></table></div>
+  <div class="panel"><div class="panel-h"><span class="title">Endpoint AI Applications</span><span class="counter">3</span></div>
+   <table><tbody>${aiApps.map(a=>`<tr onclick="${a.id==='openclaw'?"openDrawerService('chatgpt')":"toast('Demo focuses on OpenClaw on ChatGPT')"}"><td><div class="svc">${svcA(a.name.slice(0,2),'#9b8cff')}<span>${a.name}</span></div></td><td>${a.on==='—'?'<span class="t-ter">—</span>':`<span class="tag">on ${a.on}</span>`}</td><td>${B(a.risk)}</td></tr>`).join('')}</tbody></table></div>
+ </div>`;
+}
+
+/* ---------- investigation drawer (stacked) ---------- */
+let dstack=[];
+function openDrawerService(id){dstack=[{v:'service',id}];document.getElementById('scrim').classList.add('show');document.getElementById('drawer').classList.add('show');renderDrawer();}
+function pushD(o){dstack.push(o);renderDrawer();}
+function drawerTo(i){dstack=dstack.slice(0,i+1);renderDrawer();}
+function closeDrawer(){document.getElementById('scrim').classList.remove('show');document.getElementById('drawer').classList.remove('show');}
+const dLabel={service:'ChatGPT',domain:'salesforce.com'};
+function renderDrawer(){
+ const cb=document.getElementById('dcrumb'),body=document.getElementById('drawer-body');
+ cb.innerHTML=dstack.map((s,i)=>{const last=i===dstack.length-1;const lab=s.v==='service'?'ChatGPT':s.v==='domain'?'salesforce.com':s.v==='host'?(s.hid||'').toUpperCase():s.v==='user'?s.u.split('@')[0]:s.v==='group'?s.g:'';
+   return last?`<span class="cur">${lab}</span>`:`<span class="lk" onclick="drawerTo(${i})">${lab}</span><span class="sp">›</span>`;}).join(' ');
+ const st=dstack[dstack.length-1];body.innerHTML=({service:dService,domain:dDomain,host:dHostV,user:dUserV,group:dGroupV}[st.v])(st);
+}
+function dService(){return `
+ <div class="dsec"><div class="svc" style="font-weight:600">${services[0].ic} ChatGPT <span class="tag" style="margin-left:6px">GenAI service</span></div>
+   <div class="sumrow" style="margin-top:12px"><div class="si"><b>142</b>users</div><div class="si"><b>1</b>endpoint AI agent</div><div class="si"><b>4</b>domains accessed</div></div></div>
+ <div class="dsec" id="d-agent"><div class="dlab">${I('shadow',1.8,14)} Endpoint AI Applications on this service</div>
+   <div class="dom" onclick="toast('OpenClaw — autonomous AI agent on 3 endpoints')"><div class="l">${svcA('Op','#9b8cff')}<div><div>OpenClaw Agent</div><div class="cap2">Autonomous AI agent · 3 endpoints · Active</div></div></div>${B('crit')}</div></div>
+ <div class="dsec" id="d-domains"><div class="dlab">${I('globe',1.8,14)} Domains Accessed by Endpoint AI Applications <span class="cap2" style="margin-left:auto;text-transform:none;letter-spacing:0">via OpenClaw</span></div>
+   ${chatgptDomains.map(d=>`<div class="dom" ${d.n==='salesforce.com'?'id="d-salesforce"':''} onclick="${d.n==='salesforce.com'?"pushD({v:'domain'})":"toast('Demo focuses on salesforce.com')"}"><div class="l"><span class="ic">${I('globe')}</span><div><div>${d.n}</div><div class="cap2">${d.t} · ${d.users} users</div></div></div>${B(d.sev)}</div>`).join('')}</div>`;
+}
+function dDomain(){return `
+ <div class="dsec"><div class="svc" style="font-weight:600"><span class="ava" style="background:#f3a64a22;color:#f3a64a">${I('globe',1.8,16)}</span>salesforce.com ${B('crit')}</div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px"><span class="cap2">Reached by</span><span class="tag">${svcA('Op','#9b8cff')} OpenClaw</span><span class="cap2">on</span><span class="tag">${services[0].ic} ChatGPT</span></div></div>
+ <div class="dsec" id="d-sfusers"><div class="dlab">${I('users',1.8,14)} Users reaching this domain <span class="counter" style="margin-left:6px">${salesforceUsers.length}</span><span style="margin-left:auto;text-transform:none;letter-spacing:0;font-weight:400" class="cap2">fields are linkable</span></div>
+   <table><thead><tr><th>User</th><th>Group</th><th>Host</th></tr></thead><tbody>
+   ${salesforceUsers.map(u=>`<tr><td><span class="linkish" onclick="event.stopPropagation();pushD({v:'user',u:'${u.u}'})">${u.u.split('@')[0]}</span></td>
+     <td><span class="ctag" style="color:var(--purple);background:var(--purple-bg);cursor:pointer" onclick="event.stopPropagation();pushD({v:'group',g:'${u.group}'})">${I('group',1.8,12)} ${u.group}</span></td>
+     <td><span class="linkish" onclick="event.stopPropagation();pushD({v:'host',hid:'${u.hid}'})">${u.host}</span></td></tr>`).join('')}</tbody></table></div>`;
+}
+function dHostV(st){const rec=salesforceUsers.find(x=>x.hid===st.hid)||{group:'Manually Installed Agents'};const name=(st.hid||'').toUpperCase();return `
+ <div class="dsec" style="display:flex;align-items:center"><div><div class="svc" style="font-weight:600">${I('ep',1.8,16)} ${name}</div><div class="cap2" style="margin-top:4px">Forensics · Host</div></div><span class="linkish cap2" style="margin-left:auto" onclick="closeDrawer();go('host','${st.hid}')">Open full forensics ›</span></div>
+ <div class="dsec"><div class="dlab">Timeline</div><div class="mini-tl">${[{l:'OpenClaw',i:'shadow'},{l:'salesforce.com',i:'globe',al:1},{l:'Ext comm',i:'net'},{l:'Alert',i:'alert',al:1},{l:'Last scan',i:'cal'}].map(n=>`<div class="n ${n.al?'al':''}"><div class="ln"></div><div class="d">${I(n.i,1.8,15)}</div><div class="lb">${n.l}</div></div>`).join('')}</div></div>
+ <div class="dsec"><div class="dlab">Risk indicators</div><div class="risk"><div class="ri"><div class="ico" style="background:var(--high-bg);color:var(--high)">${I('shadow')}</div><div>Runs the OpenClaw endpoint AI agent</div><span class="sc" style="background:var(--high-bg);color:var(--high)">95</span></div><div class="ri"><div class="ico" style="background:var(--critical-bg);color:var(--critical)">${I('globe')}</div><div>Agent reached salesforce.com (CRM data)</div><span class="sc" style="background:var(--critical-bg);color:var(--critical)">90</span></div></div></div>
+ <div class="dsec"><div class="dlab">Host properties</div><div class="kv"><span class="k">Group</span><span class="v"><span class="linkish" onclick="pushD({v:'group',g:'${rec.group}'})">${rec.group}</span></span></div><div class="kv"><span class="k">Last Known IP</span><span class="v">192.168.16.131</span></div><div class="kv"><span class="k">OS</span><span class="v">Windows Server 2025 x64</span></div><div class="kv"><span class="k">Antivirus</span><span class="v" style="color:var(--low)">Running</span></div></div>`;
+}
+function dUserV(st){const rec=salesforceUsers.find(x=>x.u===st.u)||salesforceUsers[0];return `
+ <div class="dsec" style="display:flex;align-items:center"><div><div class="svc" style="font-weight:600"><span class="ava ava-round">${st.u.slice(0,2).toUpperCase()}</span>${st.u}</div><div class="cap2" style="margin-top:4px">Forensics · User</div></div><span class="linkish cap2" style="margin-left:auto" onclick="closeDrawer();go('userf','${st.u}')">Open full forensics ›</span></div>
+ <div class="dsec"><div class="dlab">Exposure</div><div class="risk"><div class="ri"><div class="ico" style="background:var(--critical-bg);color:var(--critical)">${I('globe')}</div><div>Reached salesforce.com via OpenClaw</div><span class="sc" style="background:var(--critical-bg);color:var(--critical)">90</span></div><div class="ri"><div class="ico" style="background:var(--purple-bg);color:var(--purple)">${I('group')}</div><div>Group: ${rec.group}</div></div></div></div>
+ <div class="dsec"><div class="dlab">User properties</div><div class="kv"><span class="k">Domain</span><span class="v">greenleaf.com</span></div><div class="kv"><span class="k">Group</span><span class="v"><span class="linkish" onclick="pushD({v:'group',g:'${rec.group}'})">${rec.group}</span></span></div><div class="kv"><span class="k">Host</span><span class="v"><span class="linkish" onclick="pushD({v:'host',hid:'${rec.hid}'})">${rec.host}</span></span></div><div class="kv"><span class="k">Last used</span><span class="v">${rec.last}</span></div></div>`;
+}
+function dGroupV(st){const rows=endpoints.filter(e=>e.group===st.g);return `
+ <div class="dsec" style="display:flex;align-items:center"><div><div class="svc" style="font-weight:600">${I('group',1.8,16)} ${st.g}</div><div class="cap2" style="margin-top:4px">Endpoints Management · Group association</div></div><span class="linkish cap2" style="margin-left:auto" onclick="closeDrawer();go('endpoints','${st.g}')">Open in Endpoints ›</span></div>
+ <div class="dsec"><div class="dlab">Endpoints in this group <span class="counter" style="margin-left:6px">${rows.length}</span></div>
+   <table><thead><tr><th>Endpoint</th><th>Private IP</th><th>Status</th></tr></thead><tbody>${rows.map(e=>`<tr onclick="pushD({v:'host',hid:'${e.ep.toLowerCase()}'})"><td><span class="linkish">${e.ep}</span></td><td class="t-sec">${e.ip}</td><td><span style="color:var(--low)">● OK</span></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+/* ---------- full screens (Open full ›) ---------- */
+function endpointsMgmt(group){renderNav('Endpoints');crumbs([{t:'Endpoints'},{t:'Management'},{t:'Endpoints'}]);
+ document.getElementById('content').innerHTML=`<div class="tabbar" style="margin-bottom:16px">${['Endpoints','Non-Deployed Endpoints','Other Assets (Beta)'].map((t,i)=>`<div class="tabx ${i===0?'active':''}">${t}</div>`).join('')}</div>
+ <div class="summary-tiles"><div class="stile"><div class="n">8</div><div class="l">Endpoints</div></div><div class="stile"><div class="n">0</div><div class="l">Faulty</div></div><div class="stile"><div class="n">0</div><div class="l">Not Protected</div></div></div>
+ <div class="panel"><div class="toolbar"><div class="search">${I('eye')}<input placeholder="Search Endpoint or IP"></div><div class="icon-btn">${I('filter')}</div><div class="spacer"></div>${group?`<span class="tag">Group: ${group} <span style="cursor:pointer" onclick="go('endpoints')">✕</span></span>`:''}<button class="btn outline" style="padding:6px 12px">${I('export')} Export</button></div>
+   <table><thead><tr><th>Endpoint</th><th>Private IP</th><th>Group</th><th>Status</th></tr></thead><tbody>${endpoints.map(e=>`<tr onclick="go('host','${e.ep.toLowerCase()}')"><td><span class="linkish">${e.ep}</span></td><td class="t-sec">${e.ip}</td><td>${group&&e.group===group?`<b>${e.group}</b>`:e.group}</td><td><span style="color:var(--low)">● OK</span></td></tr>`).join('')}</tbody></table></div>`;
+}
+function hostForensics(hid){renderNav('Forensic');const name=(hid||'eps-16-131').toUpperCase();crumbs([{t:'Forensic',go:"go('shadow')"},{t:'Hosts',go:"back()"},{t:name}]);
+ document.getElementById('content').innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><button class="btn ghost" onclick="back()">‹ Back</button><span class="h6">${name}</span><span class="tag">Forensics · Host</span></div>
+ <div class="panel"><div class="tabbar">${['Details','Alerts','Files','Users','Logins','Traffic','System','File Monitor','Windows Events'].map((t,i)=>`<div class="tabx ${i===0?'active':''}" onclick="document.querySelectorAll('.tabx').forEach(x=>x.classList.remove('active'));this.classList.add('active')">${t}</div>`).join('')}</div>
+  <div class="detail-grid"><div class="detail-col"><h4>Host Properties</h4><div class="kv"><span class="k">Host Name</span><span class="v">${name}</span></div><div class="kv"><span class="k">Group</span><span class="v">Manually Installed Agents</span></div><div class="kv"><span class="k">Last Known IP</span><span class="v">192.168.16.131</span></div></div><div class="detail-col"><h4>Performance</h4><div class="kv"><span class="k"># Processes</span><span class="v">120</span></div><div class="kv"><span class="k">Total CPU</span><span class="v">50%</span></div></div><div class="detail-col"><h4>Antivirus</h4><div class="kv"><span class="k">Status</span><span class="v" style="color:var(--low)">Running</span></div></div></div></div>`;
+}
+function userForensics(u){renderNav('Forensic');crumbs([{t:'Forensic',go:"go('shadow')"},{t:'Users',go:"back()"},{t:u}]);
+ document.getElementById('content').innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><button class="btn ghost" onclick="back()">‹ Back</button><span class="svc h6"><span class="ava ava-round">${u.slice(0,2).toUpperCase()}</span>${u}</span><span class="tag">Forensics · User</span></div>
+ <div class="panel"><div class="detail-grid"><div class="detail-col"><h4>User Properties</h4><div class="kv"><span class="k">User</span><span class="v">${u}</span></div><div class="kv"><span class="k">Domain</span><span class="v">greenleaf.com</span></div></div></div></div>`;
+}
+
+/* ---------- misc + walkthrough ---------- */
+let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2400);}
+const scenario={id:'posture',name:'AI security posture',persona:'CISO / Security Manager',
+ desc:'Understand the organization’s AI security posture — how many users use AI, how many GenAI services and endpoint AI applications exist — then trace one risk (a sensitive domain an agent reaches) down to the exact users, their groups and their hosts.',
+ scenario:'The security manager sees ChatGPT in use with the OpenClaw agent running on it, notices the agent is reaching salesforce.com, and wants to know exactly which users are behind that — which groups they belong to and on which hosts.',
+ flow:['Open Shadow AI','Read posture KPIs','Open ChatGPT (drawer)','See OpenClaw agent & domains','Open salesforce.com','See users · groups · hosts','Investigate in the drawer'],
+ steps:[
+  {nav:{s:'shadow'},sel:'#t-kpis',tt:'His AI security posture, at a glance',tx:'The security manager opens Shadow AI to size up his posture — 187 users on AI, 4 GenAI services, 3 endpoint AI applications.'},
+  {sel:'#t-chatgpt',tt:'ChatGPT is in use — and it has an agent',tx:'ChatGPT is flagged with an agent running on it. He clicks the row.'},
+  {action:()=>openDrawerService('chatgpt'),sel:'#d-agent',tt:'A drawer opens over the page',tx:'The investigation drawer slides in from the right — the Shadow AI list stays behind. It shows OpenClaw, the agent running on ChatGPT.'},
+  {sel:'#d-domains',tt:'The agent is reaching salesforce.com',tx:'“Domains Accessed by Endpoint AI Applications” lists salesforce.com — CRM data — reached via OpenClaw.'},
+  {action:()=>pushD({v:'domain'}),sel:'#d-sfusers',tt:'The drawer drills deeper',tx:'The drawer advances (note the breadcrumb at the top) to the users reaching salesforce.com via OpenClaw on ChatGPT — with their group and host.'},
+  {sel:'#d-sfusers',tt:'Investigate without losing context',tx:'He clicks a user, host or group — the drawer keeps drilling (forensics, group endpoints) with a breadcrumb back, and the page stays put behind it.'},
+ ]};
+function renderScnbar(){document.getElementById('scnbar').innerHTML=`<span class="lbl">${'<svg width=16 height=16 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=1.8>'+ICN.bolt+'</svg>'} Guided scenario:</span><div class="scn-btn" onclick="openScenario()"><span class="num">1</span><div><div class="nm">${scenario.name}</div><div class="pp">${scenario.persona}</div></div></div><span class="bar-collapse" onclick="collapseBar()">✕</span>`;}
+function collapseBar(){document.getElementById('scnbar').classList.add('hidden');document.getElementById('scnfab').classList.add('show');}
+function expandBar(){document.getElementById('scnbar').classList.remove('hidden');document.getElementById('scnfab').classList.remove('show');}
+function openScenario(){const s=scenario;document.getElementById('scnTitle').textContent=s.name;
+ document.getElementById('scnBody').innerHTML=`<span class="pchip" style="background:rgba(255,255,255,.2);color:#fff">${'<svg width=13 height=13 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2>'+ICN.users+'</svg>'} ${s.persona}</span><div class="msec"><div class="mlab">Use case</div><div class="mtx">${s.desc}</div></div><div class="msec"><div class="mlab">Scenario in this prototype</div><div class="mtx">${s.scenario}</div></div><div class="msec"><div class="mlab">Expected workflow</div><div class="flow">${s.flow.map((f,k)=>`<div class="fstep"><span class="fn">${k+1}</span>${f}</div>${k<s.flow.length-1?'<span class="farr">→</span>':''}`).join('')}</div></div>`;
+ document.getElementById('scnBlanket').classList.add('show');}
+function closeScn(){document.getElementById('scnBlanket').classList.remove('show');}
+function startScenario(){closeScn();collapseBar();tour.i=0;document.getElementById('tour').classList.add('show');goStep(0);}
+let tour={i:0};
+function endTour(){document.getElementById('tour').classList.remove('show');document.getElementById('tourSpot').style.display='none';}
+function goStep(n){const st=scenario.steps[n];tour.i=n;if(st.nav){stack=[{s:st.nav.s,p:st.nav.p}];render(st.nav.s,st.nav.p);}if(st.action)st.action();
+ const b=document.getElementById('tourBubble');
+ b.innerHTML=`<span class="skip" onclick="endTour()">Skip</span><span class="pchip">${'<svg width=12 height=12 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2>'+ICN.users+'</svg>'} ${scenario.persona}</span><div class="tt">${st.tt}</div><div class="tx">${st.tx}</div><div class="ft"><span class="step">Step ${n+1} of ${scenario.steps.length}</span>${n>0?'<button class="mini" onclick="goStep('+(n-1)+')">Back</button>':''}${n<scenario.steps.length-1?'<button class="mini primary" onclick="goStep('+(n+1)+')">Next</button>':'<button class="mini primary" onclick="endTour()">Done</button>'}</div>`;
+ setTimeout(()=>place(st.sel),300);}
+function place(sel){const spot=document.getElementById('tourSpot'),b=document.getElementById('tourBubble');const el=sel?document.querySelector(sel):null;if(el)el.scrollIntoView({block:'center',behavior:'smooth'});
+ setTimeout(()=>{if(el){const r=el.getBoundingClientRect();spot.style.display='block';spot.style.top=(r.top-6)+'px';spot.style.left=(r.left-6)+'px';spot.style.width=(r.width+12)+'px';spot.style.height=(r.height+12)+'px';
+   const bw=Math.min(350,innerWidth-24),bh=b.offsetHeight||190;let bx=r.left-bw-16;if(bx<12)bx=Math.max(12,r.left-bw-16);if(r.left>bw+30){bx=r.left-bw-16;}else{bx=Math.min(r.left,innerWidth-bw-12);}let by=r.top;if(by+bh>innerHeight-12)by=Math.max(12,innerHeight-bh-12);b.style.left=bx+'px';b.style.top=by+'px';}
+   else{spot.style.display='none';b.style.left=(innerWidth/2-175)+'px';b.style.top=(innerHeight/2-100)+'px';}},180);}
+window.addEventListener('resize',()=>{if(document.getElementById('tour').classList.contains('show'))place(scenario.steps[tour.i].sel);});
+renderScnbar();render('shadow');
+</script>
+</body>
+</html>
